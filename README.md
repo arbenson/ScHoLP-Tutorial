@@ -1,14 +1,15 @@
+# Simplicial closure and higher-order link prediction tutorial
 
-
-# Simplicial closure and higher-order link prediction
-
-This software package accompanies the paper
+This Julia software accompanies the paper.
 
 - Simplicial closure and higher-order link prediction.
   Austin R. Benson, Rediet Abebe, Michael T. Schaub, Ali Jadbabaie, and Jon Kleinberg.
   In preparation.
 
-The implementations are in Julia.
+This tutorial code is not the main software library for simplicial closure and higher-order link prediction. Instead, the tutorial has the following goals:
+
+1. Demonstrate how to use the package ScHoLP.jl for higher-order network analysis, in particular, for simplicial closure and higher-order link prediction.
+2. Reproduce results and figures that appear in the paper.
 
 ### Setup
 
