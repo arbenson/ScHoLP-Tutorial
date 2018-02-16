@@ -1,19 +1,17 @@
 include("common.jl")
 
-const OUTDIR = "prediction-output"
-
-include("local_scores.jl")
-include("simplicial_pr_scores.jl")
-include("walk_scores.jl")
+using ScHoLP
 
 using Combinatorics
 using MAT
 using PyCall, JLD, PyCallJLD
 
+
 using ScikitLearn
 @sk_import linear_model: LogisticRegression
 @sk_import metrics: average_precision_score
 
+const OUTDIR = "prediction-output"
 basename_str(dataset::String) = "$(OUTDIR)/$dataset-open-tris-80-100"
 
 function read_data(dataset::String, prcntl1::Int64, prcntl2::Int64)

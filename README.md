@@ -13,9 +13,33 @@ This tutorial code is not the main software library for simplicial closure and h
 
 ### Setup
 
+As discussed above, this tutorial shows how to use the ScHoLP.jl library for higher-order network analysis and reproduction of results. For the 
+
 ```julia
 using ScHoLP
 ```
+
+### Data
+
+The package comes with a few example datasets.
+
+```julia
+ex = example_dataset("example1")  # example from figure 1
+typeof(ex)  # should be ScHoLP.HONData
+ex.simplices, ex.nverts, ex.times, ex.name  # components of the data structure
+chs = example_dataset("contact-high-school") # another dataset
+```
+
+The tutorial also comes with a few datasets.
+
+```julia
+include("common.jl")
+hist_coauth = read_txt_data("coauth-MAG-History")
+ndc_classes = read_txt_data("NDC-classes")
+enron = read_txt_data("email-Enron")
+```
+
+The datasets from the paper are available from http://www.cs.cornell.edu/~arb/data/
 
 ### Simplicial closure probabilities
 

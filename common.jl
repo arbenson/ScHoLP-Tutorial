@@ -1,13 +1,14 @@
 using Base.Threads
 using Combinatorics
+using ScHoLP
 using StatsBase
 
 function read_txt_data(dataset::String)
     read(filename::String) = convert(Vector{Int64}, readdlm(filename, Int64)[:, 1])
-    return HONData((read("data/$(dataset)/$(dataset)-simplices.txt"),
-                    read("data/$(dataset)/$(dataset)-nverts.txt"),
-                    read("data/$(dataset)/$(dataset)-times.txt"),
-                    dataset))
+    return HONData(read("data/$(dataset)/$(dataset)-simplices.txt"),
+                   read("data/$(dataset)/$(dataset)-nverts.txt"),
+                   read("data/$(dataset)/$(dataset)-times.txt"),
+                   dataset)
 end
 
 function read_node_labels(dataset::String)

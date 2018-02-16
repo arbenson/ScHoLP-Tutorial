@@ -1,7 +1,6 @@
 include("common.jl")
 
 using DataFrames
-using HypothesisTests
 using MAT
 using PyPlot
 using PyCall
