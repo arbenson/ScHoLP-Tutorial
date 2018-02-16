@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+email-Enron,143,10883,26841,2,18,16.037222,1.772875e-01,6578,3317,1542,4648,3.014267,4.222778,2.034464,3.629469e-01,10290,36262
+email-Enron-3-3,125,1231,3693,3,3,7.129344,6.683871e-02,317,331,324,972,3.000000,1.876448,1.179141,1.051613e-01,312,983

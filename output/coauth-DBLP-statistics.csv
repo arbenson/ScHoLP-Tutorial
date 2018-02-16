@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+coauth-DBLP-25,1924991,3700067,10304356,3,25,1.784263,4.266170e-06,12986630,1295214,2599087,8152979,3.136888,1.574860,1.000416,6.715807e-06,15914379,375804
+coauth-DBLP-25-3-3,801900,899052,2697153,3,3,1.601959,5.236538e-06,667288,66097,716146,2148435,3.000000,1.276051,1.000066,6.681633e-06,716137,2174

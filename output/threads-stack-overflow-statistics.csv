@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+threads-stack-overflow,2675955,11305343,25577823,2,25,1.105449,5.865277e-06,14853826,99027304,9705709,23761433,2.448191,1.095046,1.018579,6.305324e-06,14881540,148037847
+threads-stack-overflow-3-3,1141149,2103921,6311763,3,3,1.050371,9.228980e-06,2102208,4551000,2102246,6306738,3.000000,1.049535,1.005485,9.632958e-06,2102026,4776505

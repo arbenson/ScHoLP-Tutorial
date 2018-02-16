@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+congress-committees,863,679,9074,13,25,1.675582,1.025291e-01,262576,190054,678,9067,13.373156,1.675031,1.196500,1.431821e-01,296768,575891
+congress-committees-3-3,0,0,0,0,0,0.0,0.0,0,0,0,0,0.0,0.0,0.0,0.0,0,0

@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+NDC-substances,5311,112405,207853,2,25,5.196549,6.259829e-03,692699,1136357,10025,54627,5.449077,3.288100,1.913438,1.072032e-02,1189391,5158802
+NDC-substances-3-3,782,6589,19767,3,3,11.759072,5.504779e-03,745,322,761,2283,3.000000,1.358120,1.043179,7.129033e-03,749,520

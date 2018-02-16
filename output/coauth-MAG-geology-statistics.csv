@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+coauth-MAG-Geology,1256385,1590335,4418884,3,25,1.478858,6.488129e-06,11140452,1344712,1207390,3802198,3.149105,1.393540,1.000823,9.033908e-06,12964985,381234
+coauth-MAG-Geology-3-3,369597,259187,777561,3,3,1.245586,9.139763e-06,227950,11170,228832,686496,3.000000,1.099708,1.000025,1.005075e-05,228827,102

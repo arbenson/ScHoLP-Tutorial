@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+threads-ask-ubuntu,125602,192947,346537,2,14,1.070812,2.372720e-05,61469,136374,167001,318797,1.908953,1.061109,1.046173,2.404946e-05,61551,278078
+threads-ask-ubuntu-3-3,26149,21637,64911,3,3,1.047256,1.813018e-04,21621,23200,21621,64863,3.000000,1.046481,1.025633,1.848645e-04,21578,36310

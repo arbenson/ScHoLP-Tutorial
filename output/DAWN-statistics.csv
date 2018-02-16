@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+DAWN,2558,2272433,3596794,2,16,18.995999,3.759873e-02,1034190,5682552,143523,563574,3.926716,9.553825,8.130955,4.370318e-02,1145493,8043153
+DAWN-3-3,1680,180450,541350,3,3,16.517666,2.323804e-02,41226,555773,42168,126504,3.000000,3.859889,2.859485,3.108852e-02,39010,1140570

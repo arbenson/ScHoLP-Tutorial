@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+coauth-MAG-History,1014734,1812511,2367289,1,25,1.180567,2.247124e-06,2978835,58749,895668,1375495,1.535720,1.079313,1.000507,2.424041e-06,3100280,2558
+coauth-MAG-History-3-3,117211,55178,165534,3,3,1.196392,2.014237e-05,47423,152,47469,142407,3.000000,1.029242,1.000028,2.073051e-05,47467,6

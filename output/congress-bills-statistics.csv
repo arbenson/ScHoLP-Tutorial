@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+congress-bills,1718,260851,954262,4,25,11.732251,2.881084e-01,12132940,44857465,85082,735429,8.643767,11.338339,5.140985,6.345095e-01,22152091,273036113
+congress-bills-3-3,1617,11794,35382,3,3,1.707049,1.586409e-02,10156,86539,10194,30582,3.000000,1.475467,1.106572,2.111461e-02,10136,114092

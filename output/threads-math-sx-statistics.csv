@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+threads-math-sx,176445,719792,1610393,2,21,1.273102,6.997840e-05,755658,11294665,595778,1457727,2.446762,1.246527,1.196558,7.283290e-05,754660,18215655
+threads-math-sx-3-3,68794,142365,427095,3,3,1.140027,1.583232e-04,142065,1305176,142075,426225,3.000000,1.137704,1.101807,1.633472e-04,141696,2222860

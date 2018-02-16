@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+music-rap-genius,56832,224878,334994,1,24,1.463810,7.671574e-05,155403,70057,85429,183107,2.150464,1.343323,1.006710,1.027098e-04,169043,32993
+music-rap-genius-3-3,17792,15370,45981,3,3,1.313105,2.212503e-04,13638,7589,14148,42343,3.000000,1.209213,1.004190,2.669384e-04,14129,2065

@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+contact-high-school,327,172035,352718,2,5,32.644895,1.091537e-01,2370,31850,7937,18479,2.328210,2.302681,1.224057,2.044802e-01,3059,88932
+contact-high-school-3-3,317,7475,22425,3,3,8.305556,5.390728e-02,2091,5721,2126,6378,3.000000,2.362222,1.131434,1.121072e-01,2101,18438

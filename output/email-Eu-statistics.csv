@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+email-Eu,998,234760,547501,2,25,25.319328,5.889211e-02,160605,234600,25791,88266,3.422357,7.190621,2.309388,1.825999e-01,555250,5101360
+email-Eu-3-3,792,17969,53907,3,3,7.754171,2.219413e-02,4938,15345,5080,15240,3.000000,2.192175,1.194178,4.057643e-02,5013,64883

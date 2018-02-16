@@ -1,0 +1,3 @@
+dataset,nnodes,nsimps,nconns,meansimpsize,maxsimpsize,meanprojweight,projdensity,nclosedtri,nopentri,nbbnodes,nbbconns,meanbbsimpsize,meanbbprojweight,meanbbconfigweight,bbconfigdensity,nbbconfigclosedtri,nbbconfigopentri
+tags-math-sx,1629,822059,1801637,2,5,17.178884,6.914373e-02,249548,2666353,174933,606971,3.469734,9.060468,4.597871,1.353931e-01,459424,12615087
+tags-math-sx-3-3,1564,173836,521508,3,3,10.734593,3.974749e-02,63870,827563,66109,198327,3.000000,4.082314,2.401521,6.723168e-02,63650,2866967
