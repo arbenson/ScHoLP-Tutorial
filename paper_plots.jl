@@ -245,32 +245,6 @@ function closure_probs_heat_map(simplex_size::Int64)
     show()
 end
 
-function closure_probs_line(simplex_size::Int64)
-    close()
-    PyPlot.pygui(true)
-
-    probs = nothing
-    for param in all_datasets_params()
-        keys, nsamples, nclosed = read_closure_stats(param[1], simplex_size)
-        probs = nclosed ./ nsamples
-        for (key_ind, (key, nsamp)) in enumerate(zip(keys, nsamples))
-            if nsamp <= 20; probs[key_ind] = 0; end
-        end
-        semilogy(collect(0:(length(probs)-1)), probs, label=param[1],
-                 marker=param[2], ms=4,
-                 lw=0.5, color=param[3])
-    end
-
-    ax = gca()    
-    ax[:set_xticks](0:(length(probs)-1))
-    ax[:tick_params](axis="both", length=3)
-    ax[:set_xticklabels](["" for _ in 0:(length(probs)-1)])
-    ylabel("Closure probability")
-    tight_layout()
-    savefig("closure-probs-$(simplex_size).pdf")
-    show()
-end
-
 function three_node_scatter_plot()
     plot_params = all_datasets_params()
     datasets = [row[1] for row in plot_params]
@@ -381,7 +355,7 @@ function four_node_scatter_plot()
     show()
 end
 
-function gen_means_plot()
+function generalized_means_plot()
     close()
     fsz=10
     function make_subplot(datasets)
@@ -421,54 +395,7 @@ function gen_means_plot()
     make_subplot(set3)    
     
     tight_layout()
-    savefig("genmeans-perf.pdf")
+    savefig("generalized-means-perf.pdf")
     show()
 end
 
-function structure_3d()
-    plot_params = all_datasets_params()
-    datasets = [row[1] for row in plot_params]
-    
-    frac_open  = Float64[]
-    nodes      = Float64[]
-    ave_deg    = Float64[]
-    frac_open3 = Float64[]
-    nodes3     = Float64[]
-    ave_deg3   = Float64[]
-    for dataset in datasets
-        data = readtable("output/$dataset-statistics.csv")
-        no = data[1, :nopentri]
-        nc = data[1, :nclosedtri]
-        push!(frac_open, no / (no + nc))
-        pd = data[1, :projdensity]
-        nn = data[1, :nnodes]
-        push!(nodes, nn)
-        push!(ave_deg, pd * (nn - 1))
-
-        no = data[2, :nopentri]
-        nc = data[2, :nclosedtri]
-        push!(frac_open3, no / (no + nc))
-        pd = data[2, :projdensity]
-        nn = data[2, :nnodes]
-        push!(nodes3, nn)
-        push!(ave_deg3, pd * (nn - 1))
-    end
-
-    PyPlot.pygui(true)    
-    close()
-    markers = [row[2] for row in plot_params]
-    colors  = [row[3] for row in plot_params]
-
-    fsz=10
-    for i in 1:length(datasets)
-        scatter3D([log(nodes3[i])], [log(ave_deg3[i])], [frac_open3[i]], marker=markers[i], c=colors[i], s=[30])
-    end
-    xlabel("Log number of nodes", fontsize=fsz)
-    ylabel("Log average degree", fontsize=fsz)    
-    zlabel("Fraction of triangles open", fontsize=fsz)
-    title("Exactly 3 nodes per simplex", fontsize=fsz)
-
-    tight_layout()
-    savefig("data-3d-only3.pdf")
-    show()
-end
