@@ -14,9 +14,9 @@ using ScikitLearn
 const OUTDIR = "prediction-output"
 basename_str(dataset::String) = "$(OUTDIR)/$dataset-open-tris-80-100"
 
-function read_data(dataset::String, prcntl1::Int64, prcntl2::Int64)
-    basename = basename_str(dataset)
-    data = readdlm("$basename-open-triangles-$prcntl1-$prcntl2.txt")
+function read_data(dataset::HONData, prcntl1::Int64, prcntl2::Int64)
+    fname = "$(OUTDIR)/$(dataset.name)-open-tris-$prcntl1-$prcntl2.mat"
+    data = matread(fname)["data"]
     dataT = data'
     ntri = size(dataT, 2)
     triangles = Vector{NTuple{3,Int64}}(ntri)
@@ -28,20 +28,22 @@ function read_data(dataset::String, prcntl1::Int64, prcntl2::Int64)
     return triangles, labels
 end
 
-function write_scores(dataset::String, score_type::String, scores::Vector{Float64})
-    matwrite("$(OUTDIR)/$dataset-open-tris-80-100-scores-$score_type.mat",
+function write_scores(dataset::HONData, score_type::String, scores::Vector{Float64})
+    basename = basename_str(dataset.name)
+    matwrite("$basename-scores-$score_type.mat",
              Dict("scores" => scores))
 end
 
-function read_scores(dataset::String, score_type::String)
-    data = matread("$(OUTDIR)/$dataset-open-tris-80-100-scores-$score_type.mat")
+function read_scores(dataset::HONData, score_type::String)
+    basename = basename_str(dataset.name)    
+    data = matread("$basename-scores-$score_type.mat")
     return convert(Vector{Float64}, data["scores"])
 end
 
-function collect_local_scores(dataset::String)
+function collect_local_scores(dataset::HONData)
     triangles = read_data(dataset, 80, 100)[1]
-    simplices, nverts, times = read_txt_data(dataset)
-    old_simplices, old_nverts = split_data(simplices, nverts, times, 80, 100)[1:2]
+    old_simplices, old_nverts =
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
     A, At, B = basic_matrices(old_simplices, old_nverts)
     
     println("harmonic mean...")
@@ -52,7 +54,8 @@ function collect_local_scores(dataset::String)
     
     println("geometric mean...")
     write_scores(dataset, "geom_mean", geometric_mean(triangles, B))
-    
+
+    degrees = vec(sum(spones(B), 1))
     println("projected graph preferential attachment...")
     write_scores(dataset, "proj_graph_PA", pref_attach3(triangles, degrees))
     
@@ -71,13 +74,14 @@ function collect_local_scores(dataset::String)
     write_scores(dataset, "adamic_adar", adamic_adar3(triangles, common_nbrs, degrees))
 end
 
-function collect_walk_scores(dataset::String)
+function collect_walk_scores(dataset::HONData)
     triangles = read_data(dataset, 80, 100)[1]
-    simplices, nverts, times = read_txt_data(dataset)
-    old_simplices, old_nverts = split_data(simplices, nverts, times, 80, 100)[1:2]
+    old_simplices, old_nverts =
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
     A, At, B = basic_matrices(old_simplices, old_nverts)
-    basename = basename_str(dataset)
-    dense_solve = size(B, 2) < 10000
+    basename = basename_str(dataset.name)
+    #dense_solve = size(B, 2) < 10000
+    dense_solve = false
     
     println("Unweighted personalized Katz...")
     scores, S = PKatz3(triangles, B, true, dense_solve)
@@ -100,7 +104,7 @@ function collect_walk_scores(dataset::String)
     matwrite("$basename-WPPR.mat", Dict("S" => S))
 end
 
-function collect_logreg_supervised_scores(dataset::String)
+function collect_logreg_supervised_scores(dataset::HONData)
     function feature_matrix(triangles::Vector{NTuple{3,Int64}},
                             At::SpIntMat, B::SpIntMat)
         degrees = vec(sum(spones(B), 1))
@@ -127,10 +131,12 @@ function collect_logreg_supervised_scores(dataset::String)
     end
     
     triangles = read_data(dataset, 80, 100)[1]
-    simplices, nverts, times = read_txt_data(dataset)
+    simplices = dataset.simplices
+    nverts = dataset.nverts
+    times = dataset.times
     old_simplices, old_nverts = split_data(simplices, nverts, times, 80, 100)[1:2]
     A, At, B = basic_matrices(old_simplices, old_nverts)
-    basename = basename_str(dataset)
+    basename = basename_str(dataset.name)
 
     train_triangles, val_labels = read_data(dataset, 60, 80)
     train_simplices, train_nverts = split_data(simplices, nverts, times, 60, 80)[1:2]
@@ -144,29 +150,29 @@ function collect_logreg_supervised_scores(dataset::String)
     write_scores(dataset, "logreg_supervised", learned_scores)
 end
 
-function collect_Simplicial_PPR_combined_scores(dataset::String)
+function collect_Simplicial_PPR_combined_scores(dataset::HONData)
     triangles = read_data(dataset, 80, 100)[1]
-    simplices, nverts, times = read_txt_data(dataset)
-    old_simplices, old_nverts = split_data(simplices, nverts, times, 80, 100)[1:2]
+    old_simplices, old_nverts =
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
     A = basic_matrices(old_simplices, old_nverts)[1]
-    
-    basename = basename_str(dataset)
-    (scores_comb, S_comb, edge_map) = SimplicialPPR3_comb_only(triangles, A, 0.85)
+    basename = basename_str(dataset.name)    
+
+    (scores_comb, S_comb, edge_map) = Simplicial_PPR3_combined(triangles, A, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     matwrite("$basename-SimpPPR_comb.mat",
              Dict("S" => S_comb, "edge_map" => edge_map))
 end
 
-function collect_Simplicial_PPR_decomposed_scores(dataset::String)
+function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
     triangles = read_data(dataset, 80, 100)[1]
-    simplices, nverts, times = read_txt_data(dataset)
-    old_simplices, old_nverts = split_data(simplices, nverts, times, 80, 100)[1:2]
+    old_simplices, old_nverts =
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
     A = basic_matrices(old_simplices, old_nverts)[1]
-    basename = basename_str(dataset)
+    basename = basename_str(dataset.name)    
     
     (scores_comb, scores_curl, scores_grad, scores_harm,
      S_comb,      S_curl,      S_grad,      S_harm, edge_map) =
-         SimplicialPPR3(triangles, A, false, 0.85)
+         Simplicial_PPR3_decomposed(triangles, A, false, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     write_scores(dataset, "SimpPPR_grad", scores_grad)
     write_scores(dataset, "SimpPPR_curl", scores_curl)
@@ -181,7 +187,7 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::String)
              Dict("S" => S_harm, "edge_map" => edge_map))
 end
 
-function evaluate(dataset::String, score_types::Vector{String})
+function evaluate(dataset::HONData, score_types::Vector{String})
     triangles, labels = read_data(dataset, 80, 100)
     rand_rate = sum(labels .== 1) / length(labels)
     println(@sprintf("random: %0.2e", rand_rate))
@@ -190,15 +196,15 @@ function evaluate(dataset::String, score_types::Vector{String})
         assert(length(labels) == length(scores))
         ave_prec = average_precision_score(labels, scores)
         improvement = ave_prec / rand_rate
-        println(@sprintf("%s: %s: %0.2f", dataset, score_type, improvement))
+        println(@sprintf("%s: %0.2f", score_type, improvement))
     end
 end
 
-function top_predictions(dataset::String, score_type::String, topk::Int64=10)
+function top_predictions(dataset::HONData, score_type::String, topk::Int64=10)
     triangles, labels = read_data(dataset, 80, 100)
     scores = read_scores(dataset, score_type)    
     sp = sortperm(scores, alg=QuickSort, rev=true)
-    node_labels = read_node_labels(dataset)
+    node_labels = read_node_labels(dataset.name)
     for rank = 1:topk
         ind = sp[rank]
         i, j, k = triangles[ind]
@@ -214,11 +220,12 @@ collect_labeled_dataset
 Collects the open triangles in the first 80% of the data as well as a label of
 whether or not it closes.
 
-collect_labeled_dataset(dataset::String)
+collect_labeled_dataset(data::HONData)
 
--dataset::String: The dataset name.
+Input parameters:
+- dataset::HONData: The dataset.
 """
-function collect_labeled_dataset(dataset::String)
+function collect_labeled_dataset(dataset::HONData)
     function write_dataset(old_simplices::Vector{Int64}, old_nverts::Vector{Int64},
                            new_simplices::Vector{Int64}, new_nverts::Vector{Int64},
                            output_name::String)
@@ -229,17 +236,17 @@ function collect_labeled_dataset(dataset::String)
             output_data[1:3, i] = collect(tri)
             output_data[4, i] = (tri in new_closed_tris)
         end
-        basename = basename_str(dataset)
-        writedlm("$basename-$(output_name).txt", output_data')
+        basename = basename_str(dataset.name)
+        matwrite("$(OUTDIR)/$(dataset.name)-$(output_name).mat",
+                 Dict("data" => output_data'))
     end
     
-    simplices, nverts, times = read_txt_data(dataset)
     old_simplices, old_nverts, new_simplices, new_nverts =
-        split_data(simplices, nverts, times, 80, 100)
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)
     write_dataset(old_simplices, old_nverts, new_simplices, new_nverts,
                   "open-tris-80-100")
     train_simplices, train_nverts, val_simplices, val_nverts =
-        split_data(simplices, nverts, times, 60, 80)
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 60, 80)
     write_dataset(train_simplices, train_nverts, val_simplices, val_nverts,
                   "open-tris-60-80")
 end
