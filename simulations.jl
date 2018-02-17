@@ -51,5 +51,3 @@ function simulate()
              Dict("n" => all_n, "b" => all_b, "density" => all_density,
                   "ave_deg" => all_ave_deg, "frac_open" => all_frac_open))
 end
-
-simulate()

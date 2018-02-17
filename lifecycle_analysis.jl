@@ -1,4 +1,4 @@
-using ScHoLP
+include("common.jl")
 
 # NDC-classes
 # 44 breast cancer resistance protein inhibitors [moa]
@@ -18,17 +18,27 @@ using ScHoLP
 # 2628 Young Thug (20503)
 #u, v, w = 2551, 2615, 2628
 
-function trail(basename::String, dataset::String, u::Int64, v::Int64, w::int64)
+"""
+lifecycle
+---------
+
+Prints out lifecycle information for a given triple of nodes.
+
+lifecycle(dataset::HONData, u::Int64, v::Int64, w::Int64)
+
+Input parameters
+- dataset::HONData: the dataset
+- u::Int64: the first node
+- v::Int64: the second node
+- w::Int64: the third node
+"""
+function lifecycle(dataset::HONData, u::Int64, v::Int64, w::Int64)
     names = Vector{String}()
+    basename = dataset.name
     open("data/$basename/$basename-simplex-labels.txt") do f
         for line in eachline(f); push!(names, line); end
     end
-    cutoff_names = Vector{String}()
-    (simplices, nverts, times) = read_txt_data("$basename")
-    for (nv, name) in zip(nverts, names)
-        if nv <= 25; push!(cutoff_names, name); end
-    end
-    node_label_map = Dict{Int64, String}()    
+    node_label_map = Dict{Int64, String}()
     open("data/$basename/$basename-node-labels.txt") do f
         for line in eachline(f)
             info = split(line)
@@ -36,7 +46,9 @@ function trail(basename::String, dataset::String, u::Int64, v::Int64, w::int64)
         end
     end
 
-    (simplices, nverts, times) = read_txt_data(dataset)
+    simplices = dataset.simplices
+    nverts = dataset.nverts
+    times = dataset.times
     A, At, B = basic_matrices(simplices, nverts)
     simplex_order = simplex_degree_order(At)
     triangle_order = proj_graph_degree_order(B)
@@ -71,7 +83,7 @@ function trail(basename::String, dataset::String, u::Int64, v::Int64, w::int64)
     for simplex in keep_simplices
         simplex_nodes = [node_label_map[node] for node in nz_row_inds(A, simplex) if node in [u, v, w]]        
         simplex_nodes = join(simplex_nodes, "; ")
-        simplex_name = cutoff_names[simplex]
+        simplex_name = names[simplex]
         println("$simplex_name: $simplex_nodes")
     end
 end

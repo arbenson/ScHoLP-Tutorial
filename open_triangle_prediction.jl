@@ -6,7 +6,6 @@ using Combinatorics
 using MAT
 using PyCall, JLD, PyCallJLD
 
-
 using ScikitLearn
 @sk_import linear_model: LogisticRegression
 @sk_import metrics: average_precision_score
@@ -168,7 +167,7 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
     old_simplices, old_nverts =
         split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
     A = basic_matrices(old_simplices, old_nverts)[1]
-    basename = basename_str(dataset.name)    
+    basename = basename_str(dataset.name)
     
     (scores_comb, scores_curl, scores_grad, scores_harm,
      S_comb,      S_curl,      S_grad,      S_harm, edge_map) =
@@ -185,6 +184,30 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
              Dict("S" => S_curl, "edge_map" => edge_map))
     matwrite("$basename-SimpPPR_harm.mat",
              Dict("S" => S_harm, "edge_map" => edge_map))
+end
+
+function collect_generalized_means(dataset::HONData)
+    triangles, labels = read_data(dataset, 80, 100)
+    old_simplices, old_nverts =
+        split_data(dataset.simplices, dataset.nverts, dataset.times, 80, 100)[1:2]
+    B = basic_matrices(old_simplices, old_nverts)[3]
+    basename = basename_str(dataset.name)    
+
+    ps = convert(Vector{Float64}, [-Inf; collect(-4:0.25:4); Inf])
+    all_scores = generalized_means(triangles, B, ps)
+    rand_rate = sum(labels .== 1) / length(labels)
+    
+    improvements = Float64[]
+    for (r, p) in enumerate(ps)
+        scores = all_scores[:, r]
+        ave_prec = average_precision_score(labels, scores)
+        improvement = ave_prec / rand_rate            
+        push!(improvements, improvement)
+        println("($p): $improvement")
+    end
+    matwrite("$basename-genmeans-perf.mat",
+             Dict("improvements" => improvements, "ps" => ps))
+    return (ps, improvements)
 end
 
 function evaluate(dataset::HONData, score_types::Vector{String})

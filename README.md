@@ -43,7 +43,7 @@ ndc_classes = read_txt_data("NDC-classes")
 enron = read_txt_data("email-Enron")
 ```
 
-The collection of datasets from the paper are available at http://www.cs.cornell.edu/~arb/data/
+The collection of datasets from the paper are available from [this dataset web site](http://www.cs.cornell.edu/~arb/data/).
 
 ### Simplicial closures
 
@@ -184,11 +184,11 @@ contact-high-school-3-3,317,7475,22425,3,3,8.305556,5.390728e-02,2091,5721,2126,
 
 This section is dedicated to showing how to reproduce results from the paper.
 
-##### Table 1
+##### Table 1 (basic dataset statistics)
 
-We saw this above in the summary statistics. The `summary_statistics()` command produces the numbers.
+We saw this above in the summary statistics section. The `basic_summary_statistics()` command produces the numbers.
 
-##### Table 2
+##### Table 2 (Higher-order link prediction performance)
 
 These numbers came from using the higher-order link prediction methods outlined above. Some of the methods are computationally expensive and take days to complete on a large memory server with 64 threads. The functions are 
 
@@ -217,15 +217,103 @@ end
 basic_matrices(ex_fig1)[3]
 ```
 
-##### Figure 2
+##### Figure 2A—B (legend and simplex size distribution)
 
-##### Figure 3
+Here is a sample code snippet for computing the simplex size distribution for the email-Enron dataset.
+
+```julia
+# Example code for computing simplex size distribution
+using ScHoLP
+using StatsBase: countmap
+enron = example_dataset("email-Enron")
+num_verts, counts = [collect(v) for v  in zip(sort(countmap(enron.nverts))...)]
+tot = sum(counts)
+fracs = [count / tot for count in counts];
+for (nv, f) in zip(num_verts, fracs)
+    println("$nv: $f")
+end
+```
+
+For reproducing the figure, we have pre-computed the distributions in the files `output/*-simplex-size-dist.mat`. The following produces the plot and saves it in simplex-size-dist.pdf.
+
+```julia
+include("paper_plots.jl")
+simplex_size_dist_plot()  # produce figures 2AB --> simplex-size-dist.pdf
+```
+
+##### Figure 2C—F (basic dataset structure)
+
+These figures rely on using the `summary_statistics()` function for all datasets. For some of the larger datasets, this can take a while. The pre-computed statistics are in the `output` directory. To reproduce the figures, use the following commands, which should show an image and save it to the file dataset-structure.pdf.
+
+```julia
+include("paper_plots.jl")
+dataset_structure_plots()  # produce figures 2CDEF
+```
+
+##### Figure 2G—H (model simulation)
+
+These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations, show a figure, and save it to simulation.pdf.
+
+```julia
+include("simulations.jl")
+simulate() # run the simulations to produce output/simulation.mat (takes several minutes)
+include("paper_plots.jl")
+simulation_plots() # produce figures 2GH
+```
+
+##### Figure 3 (lifecycles)
+
+Producing results from Figure 3A uses the `process_lifecycles()` function from the ScHoLP.jl library. Figures 3B—D use the `lifecycle()` function in `lifecycle_analysis.jl`.
+
+```julia
+include("lifecycle_analysis.jl")
+hist = read_txt_data("coauth-MAG-History")  # read dataset from data/coauth-MAG-History directory
+# Get data from Figure 3A
+closed_transition_counts, open_transition_counts = process_lifecycles(hist)
+# direct transitions to simplicial closure from each state
+closed_transition_counts[end, 1:(end-1)]
+
+ndc_classes = read_txt_data("NDC-classes")  # read data from data/NDC-classes directory
+node_labels = read_node_labels("NDC-classes")
+node_labels[[44, 74, 76]]  # nodes in Figure 3B
+lifecycle(ndc_classes, 44, 74, 76)
+```
+
+The simplex labels in the last function call are NDC codes. For example, the first one is 67296-1236. This corresponds to Reyataz as produced by Redpharm Drug, Inc. in 2003,
+as recorded [here](https://ndclist.com/ndc/67296-1236/package/67296-1236-4).
 
 ##### Figure 4
 
+This figure is constructed from the simplicial closure probabilities on 3-node configurations. We showed above how to compute these. We have pre-computed the probabilities for each dataset in `output/*-3-node-closures.txt`.
+
+```julia
+include("paper_plots.jl")
+closure_probs_heat_map(3)  # Figure 4A --> closure-probs-scatter-3.pdf
+three_node_scatter_plot()  # Figures 4BCD
+```
+
 ##### Figure 5
 
+Similar to Figure 4, this figure is constructed from simplicial closure probabilities on 4-node configurations. We showed above how to compute these. We have pre-computed the probabilities for each dataset in `output/*-4-node-closures.txt`.
+
+```julia
+include("paper_plots.jl")
+closure_probs_heat_map(4)  # Figure 5A --> closure-probs-4.pdf
+four_node_scatter_plot()  # Figures 5BCD --> closure-prob-scatter-4.pdf
+```
+
 ##### Figure 6
+
+We first show how to collect the data for generalized means. This should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.mat`.
+
+```julia
+include("open_triangle_prediction.jl")
+enron = read_txt_data("email-Enron")  # read dataset from data/email-Enron directory
+collect_labeled_dataset(enron)  # generate 80/20 split on triangles
+ps, improvements = collect_generalized_means(enron)
+```
+
+
 
 ##### Table S1 (temporal asynchroncity)
 
@@ -248,6 +336,8 @@ email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 ##### Table S3
 
 ##### Table S4
+
+This table is just for illustration and does not present computational results.
 
 ##### Table S5
 

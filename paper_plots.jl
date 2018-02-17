@@ -149,10 +149,10 @@ function simulation_plots()
                                ]
         scatter([1], [1], marker=marker, color=color, label="n = $n")
     end
-    legend()
-    
+    legend()    
     tight_layout()
-    savefig("model-structure.pdf")
+    savefig("simulation.pdf")
+    show()
 end
 
 function simplex_size_dist_plot()
@@ -165,8 +165,9 @@ function simplex_size_dist_plot()
     subplot(221)
     for i in 1:length(datasets)
         dataset = datasets[i]
-        (_, nverts, _) = read_txt_data(dataset)
-        nvert, counts = zip(sort(countmap(nverts))...)
+        data = matread("output/$dataset-simplex-size-dist.mat")
+        nvert = data["nvert"]
+        counts = data["counts"]
         tot = sum(counts)
         fracs = [count / tot for count in counts]
         ms = (length(dataset) > 8 && dataset[1:8] == "congress") ? 6 : 2
@@ -183,9 +184,10 @@ function simplex_size_dist_plot()
     for i in 1:length(datasets)
         plot(0.5, 0.5, markers[i], color=colors[i], label=datasets[i])
     end
-    legend(names, fontsize=4)
+    legend(datasets, fontsize=4)
     tight_layout()
     savefig("simplex-size-dist.pdf")
+    show()
 end
 
 function min_max_val(probs1::Vector{Float64}, probs2::Vector{Float64})
@@ -239,7 +241,7 @@ function closure_probs_heat_map(simplex_size::Int64)
     cb = colorbar(orientation="horizontal")
     cb[:ax][:tick_params](labelsize=(simplex_size == 4 ? 18 : 17))
     tight_layout()
-    savefig("topological-closure-probs-$(simplex_size)-nodes.pdf")
+    savefig("closure-probs-$(simplex_size).pdf")
     show()
 end
 
@@ -319,7 +321,7 @@ function three_node_scatter_plot()
     ylabel("Closure probability (111)", fontsize=fsz)    
 
     tight_layout()
-    savefig("closure-prob-scatter.pdf")
+    savefig("closure-prob-scatter-3.pdf")
     show()
 end
 
@@ -375,7 +377,7 @@ function four_node_scatter_plot()
     ylabel("Closure probability (22)", fontsize=fsz)    
 
     tight_layout()
-    savefig("closure-prob-scatter-4-node.pdf")
+    savefig("closure-prob-scatter-4.pdf")
     show()
 end
 
@@ -389,7 +391,7 @@ function gen_means_plot()
         for param in all_datasets_params()
             dataset = param[1]
             if dataset in datasets
-                basename = "prediction-output/$dataset-open-triangles-80-100"
+                basename = "output/$dataset-open-tris-80-100"
                 data = matread("$basename-genmeans-perf.mat")
                 ps = data["ps"]
                 improvements = data["improvements"]
@@ -404,12 +406,12 @@ function gen_means_plot()
         ax[:tick_params](axis="both", length=3)
     end
         
-    set1 = ["threads-stack-overflow-25", "threads-math-sx", "threads-ask-ubuntu"]
-    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu", "music-rap-genius-25",
+    set1 = ["threads-stack-overflow", "threads-math-sx", "threads-ask-ubuntu"]
+    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu", "music-rap-genius",
             "contact-high-school", "contact-primary-school",
-            "DAWN", "NDC-substances-25", "NDC-classes-25"]
-    set3 = ["coauth-MAG-History-25", "coauth-MAG-Geology-25", "coauth-DBLP-25",
-            "email-Enron-25", "email-Eu-25", "congress-committees-25", "congress-bills-25"]
+            "DAWN", "NDC-substances", "NDC-classes"]
+    set3 = ["coauth-MAG-History", "coauth-MAG-Geology", "coauth-DBLP",
+            "email-Enron", "email-Eu", "congress-committees", "congress-bills"]
     subplot(221)
     make_subplot(set1)
     legend(fontsize=fsz)
