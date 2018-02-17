@@ -223,6 +223,19 @@ function evaluate(dataset::HONData, score_types::Vector{String})
     end
 end
 
+"""
+top_predictions
+---------------
+
+Look at the top predictions of a given score function.
+
+top_predictions(dataset::HONData, score_type::String, topk::Int64=10)
+
+Input parameters:
+- dataset::HONData: the dataset
+- score_type::String: the score type (scores must have been precomputed)
+- topk::Int64=10: the number of top predictions to examine
+"""
 function top_predictions(dataset::HONData, score_type::String, topk::Int64=10)
     triangles, labels = read_data(dataset, 80, 100)
     scores = read_scores(dataset, score_type)    
@@ -238,7 +251,7 @@ end
 
 """
 collect_labeled_dataset
- --------------------
+-----------------------
 
 Collects the open triangles in the first 80% of the data as well as a label of
 whether or not it closes.
