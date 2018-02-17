@@ -17,7 +17,7 @@ function dataset_structure_plots()
     density3   = Float64[]
     ave_deg3   = Float64[]
     for dataset in datasets
-        data = readtable("output/$dataset-statistics.csv")
+        data = readtable("output/summary-stats/$dataset-statistics.csv")
         no = data[1, :nopentri]
         nc = data[1, :nclosedtri]
         push!(frac_open, no / (no + nc))
@@ -89,7 +89,7 @@ function dataset_structure_plots()
 end
 
 function simulation_plots()
-    data = matread("output/simulation.mat")
+    data = matread("output/simulation/simulation.mat")
     all_n         = data["n"]
     all_b         = data["b"]
     all_density   = data["density"]
