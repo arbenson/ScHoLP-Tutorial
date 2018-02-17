@@ -251,7 +251,7 @@ for (nv, f) in zip(num_verts, fracs)
 end
 ```
 
-For reproducing the figure, we have pre-computed the distributions in the files `output/*-simplex-size-dist.mat`. The following produces the plot and saves it in simplex-size-dist.pdf.
+For reproducing the figure, we have pre-computed the distributions in the files `output/simplex-size-dists/*-simplex-size-dist.mat`. The following produces the plot and saves it in simplex-size-dist.pdf.
 
 ```julia
 include("paper_plots.jl")
@@ -274,7 +274,6 @@ These figures require running simulations. Since the simulations are random, the
 ```julia
 include("simulations.jl")
 simulate() # run the simulations to produce simulation.mat (takes several minutes)
-
 ```
 
 The simulations uses for the paper are stored in `output/simulation/simulation.mat` for convenience. The above code should produce something similar but not exactly the same (due to randomness in the simulation). The following code snippet reproduces figures 2GH.
@@ -359,11 +358,9 @@ dataset & # open triangles & 0 overlaps & 1 overlap & 2 overlaps & 3 overlaps
 email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 ```
 
-##### Table S2
+##### Table S2 (dependence of tie strength and edge density at different points in time)
 
-##### Table S3 (Simplicial closure probabilities at different points in time)
-
-The results from this table uses the core ScHoLP.jl and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()`.
+The results from this table use the core ScHoLP.jl and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()`.
 
 ```julia
 using ScHoLP
@@ -375,6 +372,10 @@ end
 
 This creates text files email-Enron-3-node-closures-{40,60,80}.txt. For convenience, we provide all of the pre-computed closure statistics.
 
+##### Table S3 (Simplicial closure probabilities at different points in time)
+
+The results from this table uses the core ScHoLP.jl and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()`.
+
 ```julia
 include("common.jl")
 keys, nsamples, nclosed = read_closure_stats("coauth-DBLP", 3, 60);
@@ -383,8 +384,6 @@ for (k, N, nc) in zip(keys, nsamples, nclosed)
     println("$k: $closure_prob")
 end
 ```
-
-
 
 ##### Table S4 (4-node configuration reference figures)
 

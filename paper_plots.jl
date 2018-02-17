@@ -165,7 +165,7 @@ function simplex_size_dist_plot()
     subplot(221)
     for i in 1:length(datasets)
         dataset = datasets[i]
-        data = matread("output/$dataset-simplex-size-dist.mat")
+        data = matread("output/simplex-size-dists/$dataset-simplex-size-dist.mat")
         nvert = data["nvert"]
         counts = data["counts"]
         tot = sum(counts)
