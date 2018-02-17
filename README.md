@@ -198,6 +198,23 @@ These numbers came from using the higher-order link prediction methods outlined 
 
 ##### Figure 1
 
+The example higher-order network in Figure 1 is one of the examples included with the library. Here we show how to list the simplices and compute the weighted projected graph.
+
+```julia
+ex_fig1 = example_dataset("example1")
+
+# Print out simplices
+ind = 1
+for (nv, t) in zip(ex_fig1.nverts, ex_fig1.times)
+    simplex = ex_fig1.simplices[ind:(ind + nv - 1)]
+    ind += nv
+    println("$t $simplex")
+end
+
+# Get the weighted projected graph
+basic_matrices(ex_fig1)[3]
+```
+
 ##### Figure 2
 
 ##### Figure 3
