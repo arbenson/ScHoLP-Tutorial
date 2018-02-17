@@ -31,7 +31,7 @@ function read_simplex_labels(dataset::String)
     return labels
 end
 
-function read_closure_stats(dataset::AbstractString, simplex_size::Int64, initial_cutoff::Int64=100)
+function read_closure_stats(dataset::String, simplex_size::Int64, initial_cutoff::Int64=100)
     keys = []
     probs, nsamples, nclosed = Float64[], Int64[], Int64[]
     data = readdlm("output/$(simplex_size)-node-closures/$(dataset)-$(simplex_size)-node-closures.txt")

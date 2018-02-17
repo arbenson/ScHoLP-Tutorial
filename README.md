@@ -399,19 +399,25 @@ for X in [40, 60, 80, 100]
 end
 ```
 
-
-
 ##### Table S3 (Simplicial closure probabilities at different points in time)
 
-The results from this table uses the core ScHoLP.jl and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()`.
+In describing Table S2, we showed how to get the closure probabilities at different points in time. The following code snippet prints out some of the statistics
 
 ```julia
 include("common.jl")
-keys, nsamples, nclosed = read_closure_stats("coauth-DBLP", 3, 60);
-for (k, N, nc) in zip(keys, nsamples, nclosed)
-    closure_prob = nc / N
-    println("$k: $closure_prob")
+function closure_stats_over_time(dataset::String)
+    # Read closures 
+    stats = [read_closure_stats(dataset, 3, X) for X in [40, 60, 80, 100]]
+    keys = stats[1][1]  # same across each
+    for i in 1:length(keys)
+        nsamples = [stat[2][i] for stat in stats]
+        nclosures = [stat[3][i] for stat in stats]
+        frac_closed = nclosures ./ nsamples
+        println("$(keys[i]) $frac_closed")
+    end
 end
+closure_stats_over_time("DAWN")
+closure_stats_over_time("tags-stack-overflow")
 ```
 
 ##### Table S4 (4-node configuration reference figures)
