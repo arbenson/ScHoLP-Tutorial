@@ -47,7 +47,7 @@ function simulate()
             end
         end
     end
-    matwrite("output/simulation.mat",
+    matwrite("simulation.mat",
              Dict("n" => all_n, "b" => all_b, "density" => all_density,
                   "ave_deg" => all_ave_deg, "frac_open" => all_frac_open))
 end
