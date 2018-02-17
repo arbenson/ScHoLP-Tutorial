@@ -3,7 +3,7 @@ using HypothesisTests
 using DataFrames
 using GLM
 
-function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100)
+function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100, only_3_node::Bool=false)
     datasets = [param[1] for param in all_datasets_params()]
     density_tests3 = [(1, 2), (2, 4), (3, 5), (4, 7), (5, 8), (6, 9)]
     strength_tests3 = [(2, 3), (4, 5), (5, 6), (7, 8), (8, 9), (9, 10)]
@@ -30,6 +30,7 @@ function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100)
                                                 ("tie strength (4-node, 5-edge)", strength_tests4_5edge, 4),
                                                 ("tie strength (4-node, 6-edge)", strength_tests4_6edge, 4),
                                                 ("strength vs. density (4-node)", strength_density_tests4, 4)]
+        if only_3_node && simp_size != 3; continue; end
         sig_count1 = 0
         sig_count2 = 0
         raw = 0
@@ -70,15 +71,14 @@ function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100)
     end
 end
 
-function ave_deg_frac_open()
+function fracopen_logavedeg_linear_models()
     datasets = [row[1] for row in all_datasets_params()]
-    
     frac_open  = Float64[]
     ave_deg    = Float64[]
     frac_open3 = Float64[]
     ave_deg3   = Float64[]
     for dataset in datasets
-        data = readtable("output/$dataset-statistics.csv")
+        data = readtable("output/summary-stats/$dataset-statistics.csv")
         no = data[1, :nopentri]
         nc = data[1, :nclosedtri]
         push!(frac_open, no / (no + nc))

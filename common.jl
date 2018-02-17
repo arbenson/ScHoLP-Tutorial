@@ -34,9 +34,9 @@ end
 function read_closure_stats(dataset::AbstractString, simplex_size::Int64, initial_cutoff::Int64=100)
     keys = []
     probs, nsamples, nclosed = Float64[], Int64[], Int64[]
-    data = readdlm("output/$(dataset)-$(simplex_size)-node-closures.txt")
+    data = readdlm("output/$(simplex_size)-node-closures/$(dataset)-$(simplex_size)-node-closures.txt")
     if initial_cutoff < 100
-        data = readdlm("output/$(dataset)-$(simplex_size)-node-closures-$(initial_cutoff).txt")
+        data = readdlm("output/$(simplex_size)-node-closures/$(dataset)-$(simplex_size)-node-closures-$(initial_cutoff).txt")
     end
     for row_ind in 1:size(data, 1)
         row = convert(Vector{Int64}, data[row_ind, :])

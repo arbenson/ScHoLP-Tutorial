@@ -195,11 +195,30 @@ contact-high-school,327,172035,352718,2,5,32.644895,1.091537e-01,2370,31850,7937
 contact-high-school-3-3,317,7475,22425,3,3,8.305556,5.390728e-02,2091,5721,2126,6378,3.000000,2.362222,1.132810,1.118476e-01,2094,18139
 ```
 
-
-
 ### Reproducing results
 
 This section shows how to reproduce results from the paper.
+
+##### Linear models for relationships in Figures 2D and 2F
+
+We create models for the fraction of triangles that are open as a linear model of the log of the average degree (plus an intercept term). The following code snippet produces these models.
+
+```julia
+model_fig_2d, model_fig_2f = fracopen_logavedeg_linear_models()
+r2(model_fig_2d)  # roughly 0.38
+r2(model_fig_2f)  # roughly 0.85
+```
+
+##### Hypothesis tests for strong wedge vs. weak open triangle and strong flap vs. weak open wireframe
+
+Here we are testing hypotheses on whether stronger but fewer ties (strong wedge and flap) or weaker but more ties (weak open triangle and wireframe) are more indicative of simplicial closure.
+
+```julia
+include("statistical_tests_and_models.jl")
+simplicial_closure_tests()
+# run at significance level 1e-3 instead
+simplicial_closure_tests(1e-3)
+```
 
 ##### Table 1 (basic dataset statistics)
 
@@ -251,7 +270,7 @@ for (nv, f) in zip(num_verts, fracs)
 end
 ```
 
-For reproducing the figure, we have pre-computed the distributions in the files `output/simplex-size-dists/*-simplex-size-dist.mat`. The following produces the plot and saves it in simplex-size-dist.pdf.
+For reproducing the figure, we have pre-computed the distributions in the files `output/simplex-size-dists/*-simplex-size-dist.mat`. The following produces the simplex size distribution plot and saves it to `simplex-size-dist.pdf`.
 
 ```julia
 include("paper_plots.jl")
@@ -269,7 +288,7 @@ dataset_structure_plots()  # produce figures 2CDEF
 
 ##### Figure 2G—H (model simulation)
 
-These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to simulation.mat.
+These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to `simulation.mat`.
 
 ```julia
 include("simulations.jl")
@@ -370,7 +389,17 @@ for X in [40, 60, 80]
 end
 ```
 
-This creates text files email-Enron-3-node-closures-{40,60,80}.txt. For convenience, we provide all of the pre-computed closure statistics.
+This creates text files `email-Enron-3-node-closures-{40,60,80}.txt`. For convenience, we provide all of the pre-computed closure statistics in the directory `output/{3,4}-node-closures/`. The following code snippet shows how to run the hypothesis tests that are reported in the table.
+
+```julia
+include("statistical_tests_and_models.jl")
+only_3_node_tests = true
+for X in [40, 60, 80, 100]
+    simplicial_closure_tests(1e-5, X, only_3_node_tests)
+end
+```
+
+
 
 ##### Table S3 (Simplicial closure probabilities at different points in time)
 
