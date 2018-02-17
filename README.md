@@ -251,6 +251,16 @@ email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 
 ##### Table S5
 
+This table shows the results from using the Hodge decomposition on the simplicial personalized PageRank scores. Here is how one would reproduce the line for the NDC-classes dataset.
+
+```julia
+include("open_triangle_prediction.jl")
+ndc_classes = read_txt_data("NDC-classes")  # read data from data/NDC-classes directory
+collect_labeled_dataset(ndc_classes) # collect the data from the 80/20 split
+collect_Simplicial_PPR_decomposed_scores(ndc_classes) # collect scores
+evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) # print relative scores
+```
+
 ##### Table S6
 
 
