@@ -269,13 +269,19 @@ dataset_structure_plots()  # produce figures 2CDEF
 
 ##### Figure 2G—H (model simulation)
 
-These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations, show a figure, and save it to simulation.pdf.
+These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to simulation.mat.
 
 ```julia
 include("simulations.jl")
-simulate() # run the simulations to produce output/simulation.mat (takes several minutes)
+simulate() # run the simulations to produce simulation.mat (takes several minutes)
+
+```
+
+The simulations uses for the paper are stored in `output/simulation/simulation.mat` for convenience. The above code should produce something similar but not exactly the same (due to randomness in the simulation). The following code snippet reproduces figures 2GH.
+
+```julia
 include("paper_plots.jl")
-simulation_plots() # produce figures 2GH
+simulation_plots() # reproduce figures 2GH using output/simulation/simulation.mat
 ```
 
 ##### Figure 3 (lifecycles)
