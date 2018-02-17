@@ -133,6 +133,7 @@ collect_labeled_dataset(enron)
 Notice that this generates some new files in the `prediction-output` directory.
 
 Now we can generate a bunch of scores of the open triangles from the first 80% of the dataset.
+This should add a bunch of score files to the `prediction-output` directory.
 
 ```julia
 collect_local_scores(enron)  # scores based on local structural features
@@ -141,7 +142,7 @@ collect_Simplicial_PPR_combined_scores(enron) # scores based on Simplicial PPR
 collect_logreg_supervised_scores(enron) # scores based on logistic regression supervised method
 ```
 
-This should add a bunch of score files to the `prediction-output` directory.
+
 
 Since enron is a small dataset, we can afford to decompose the Simplicial PPR scores into the gradient, curl, and harmonic components:
 
@@ -149,13 +150,14 @@ Since enron is a small dataset, we can afford to decompose the Simplicial PPR sc
 collect_Simplicial_PPR_decomposed_scores(enron)
 ```
 
-We can evaluate how well these methods do compared to random guessing with respect to area under the precision-recall curve:
+We can evaluate how well these methods do compared to random guessing with respect to area under the precision-recall curve.
+This should reproduce the line for the email-Enron dataset in Table 2 of the paper.
 
 ```julia
 evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "SimpPPR_comb", "logreg_supervised", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"])
 ```
 
-This should reproduce the line for the email-Enron dataset in Table 2.
+
 
 ### Summary statistics
 
