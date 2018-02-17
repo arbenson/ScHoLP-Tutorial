@@ -142,8 +142,6 @@ collect_Simplicial_PPR_combined_scores(enron) # scores based on Simplicial PPR
 collect_logreg_supervised_scores(enron) # scores based on logistic regression supervised method
 ```
 
-
-
 Since enron is a small dataset, we can afford to decompose the Simplicial PPR scores into the gradient, curl, and harmonic components:
 
 ```julia
@@ -157,7 +155,26 @@ This should reproduce the line for the email-Enron dataset in Table 2 of the pap
 evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "SimpPPR_comb", "logreg_supervised", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"])
 ```
 
+We can also look at the top predictions made by the algorithms.
 
+```julia
+top_predictions(enron, "harm_mean", 8)
+```
+
+This should produce the following output
+
+```
+1 (31.684211; 1): lisa.gang@enron.com; kate.symes@enron.com; bill.williams@enron.com
+2 (31.159623; 0): larry.may@enron.com; sally.beck@enron.com; thomas.martin@enron.com
+3 (28.544210; 1): robert.benson@enron.com; scott.neal@enron.com; barry.tycholiz@enron.com
+4 (26.471520; 0): robert.benson@enron.com; john.lavorato@enron.com; john.zufferli@enron.com
+5 (25.770646; 0): larry.may@enron.com; phillip.allen@enron.com; andy.zipper@enron.com
+6 (25.675810; 0): chris.stokley@enron.com; robert.badeer@enron.com; kate.symes@enron.com
+7 (24.950495; 0): jane.tholt@enron.com; mike.grigsby@enron.com; barry.tycholiz@enron.com
+8 (24.368601; 0): jeffrey.shankman@enron.com; richard.shapiro@enron.com; fletcher.sturm@enron.com
+```
+
+These are the top 8 predictions. The tuple next to the ordered numbers, e.g., (31.684211; 1) in the first line, gives the score function value and a 0/1 indicator of whether or not the open triangle closed in the final 20% of the dataset (1 means that it closed). Here, we see that the first and third predictions were successful.
 
 ### Summary statistics
 
@@ -180,9 +197,9 @@ contact-high-school-3-3,317,7475,22425,3,3,8.305556,5.390728e-02,2091,5721,2126,
 
 
 
-## Reproducing research
+### Reproducing results
 
-This section is dedicated to showing how to reproduce results from the paper.
+This section shows how to reproduce results from the paper.
 
 ##### Table 1 (basic dataset statistics)
 
@@ -198,7 +215,7 @@ These numbers came from using the higher-order link prediction methods outlined 
 - `collect_Simplicial_PPR_combined_scores()` to generate scores based on simplicial PPR
 - `collect_logreg_supervised_scores()` to generate scores from the supervised learning method
 
-##### Figure 1
+##### Figure 1 (small example of higher-order network)
 
 The example higher-order network in Figure 1 is one of the examples included with the library. Here we show how to list the simplices and compute the weighted projected graph.
 
@@ -282,7 +299,7 @@ lifecycle(ndc_classes, 44, 74, 76)
 The simplex labels in the last function call are NDC codes. For example, the first one is 67296-1236. This corresponds to Reyataz as produced by Redpharm Drug, Inc. in 2003,
 as recorded [here](https://ndclist.com/ndc/67296-1236/package/67296-1236-4).
 
-##### Figure 4
+##### Figure 4 (3-node configuration closure probabilities)
 
 This figure is constructed from the simplicial closure probabilities on 3-node configurations. We showed above how to compute these. We have pre-computed the probabilities for each dataset in `output/*-3-node-closures.txt`.
 
@@ -292,7 +309,7 @@ closure_probs_heat_map(3)  # Figure 4A --> closure-probs-scatter-3.pdf
 three_node_scatter_plot()  # Figures 4BCD
 ```
 
-##### Figure 5
+##### Figure 5 (4-node configuration closure probabilities)
 
 Similar to Figure 4, this figure is constructed from simplicial closure probabilities on 4-node configurations. We showed above how to compute these. We have pre-computed the probabilities for each dataset in `output/*-4-node-closures.txt`.
 
@@ -302,9 +319,9 @@ closure_probs_heat_map(4)  # Figure 5A --> closure-probs-4.pdf
 four_node_scatter_plot()  # Figures 5BCD --> closure-prob-scatter-4.pdf
 ```
 
-##### Figure 6
+##### Figure 6 (generalized means)
 
-We first show how to collect the data for generalized means. This should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.mat`.
+We first show how to collect the data for generalized means. The following code snippet should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.mat`.
 
 ```julia
 include("open_triangle_prediction.jl")
@@ -313,7 +330,12 @@ collect_labeled_dataset(enron)  # generate 80/20 split on triangles
 ps, improvements = collect_generalized_means(enron)
 ```
 
+We pre-computed the generalized means for all of the datasets in the files `output/*-open-tris-80-100-genmeans-perf.mat`. To reproduce Figure 6, you can then use the following code snippet.
 
+```julia
+include("paper_plots.jl")
+generalized_means_plot()  # Figure 6 --> generalized-means-perf.pdf
+```
 
 ##### Table S1 (temporal asynchroncity)
 
@@ -333,13 +355,36 @@ email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 
 ##### Table S2
 
-##### Table S3
+##### Table S3 (Simplicial closure probabilities at different points in time)
 
-##### Table S4
+The results from this table uses the core ScHoLP.jl and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()`.
+
+```julia
+using ScHoLP
+enron = example_dataset("email-Enron")
+for X in [40, 60, 80]
+	closure_type_counts3(enron, X)  # start with first X% of data
+end
+```
+
+This creates text files email-Enron-3-node-closures-{40,60,80}.txt. For convenience, we provide all of the pre-computed closure statistics.
+
+```julia
+include("common.jl")
+keys, nsamples, nclosed = read_closure_stats("coauth-DBLP", 3, 60);
+for (k, N, nc) in zip(keys, nsamples, nclosed)
+    closure_prob = nc / N
+    println("$k: $closure_prob")
+end
+```
+
+
+
+##### Table S4 (4-node configuration reference figures)
 
 This table is just for illustration and does not present computational results.
 
-##### Table S5
+##### Table S5 (extra results from the Hodge decomposition)
 
 This table shows the results from using the Hodge decomposition on the simplicial personalized PageRank scores. Here is how one would reproduce the line for the NDC-classes dataset.
 
@@ -351,7 +396,6 @@ collect_Simplicial_PPR_decomposed_scores(ndc_classes) # collect scores
 evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) # print relative scores
 ```
 
-##### Table S6
+##### Table S6 (output predictions)
 
-
-
+We showed how to look at the top predictions in the higher-order link prediction section above.

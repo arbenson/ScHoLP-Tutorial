@@ -365,7 +365,7 @@ function generalized_means_plot()
         for param in all_datasets_params()
             dataset = param[1]
             if dataset in datasets
-                basename = "output/$dataset-open-tris-80-100"
+                basename = "output/generalized-means/$dataset-open-tris-80-100"
                 data = matread("$basename-genmeans-perf.mat")
                 ps = data["ps"]
                 improvements = data["improvements"]
