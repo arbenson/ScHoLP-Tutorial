@@ -1,10 +1,10 @@
-# Simplicial closure and higher-order link prediction tutorial
+# Simplicial Closure and Higher-order Link Prediction tutorial
 
 This Julia software accompanies the following paper:
 
 - Simplicial closure and higher-order link prediction.
   Austin R. Benson, Rediet Abebe, Michael T. Schaub, Ali Jadbabaie, and Jon Kleinberg.
-  In preparation.
+  arXiv, 2018.
 
 This tutorial code is not the main software library for simplicial closure and higher-order link prediction, which is [ScHoLP.jl](https://github.com/arbenson/ScHoLP.jl). Instead, the tutorial has the following goals:
 
@@ -383,7 +383,7 @@ include("paper_plots.jl")
 generalized_means_plot()  # Figure 6 --> generalized-means-perf.pdf
 ```
 
-##### Table S1 (temporal asynchroncity)
+##### Table 3 (temporal asynchroncity)
 
 To measure temporal asynchroncity in the datasets, we look at the number of "active interval" overlaps in the open triangles. The active interval is the time interval corresponding to the interval of time between the first and last simplices (in time) containing the two nodes.
 
@@ -400,7 +400,7 @@ dataset & # open triangles & 0 overlaps & 1 overlap & 2 overlaps & 3 overlaps
 email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 ```
 
-##### Table S2 (dependence of tie strength and edge density at different points in time)
+##### Table 4 (dependence of tie strength and edge density at different points in time)
 
 The results from this table just use the core ScHoLP.jl functionality and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()` for pre-filtering the dataset to just start with the first X% of timestamped simplices.
 
@@ -423,7 +423,7 @@ for X in [40, 60, 80, 100]
 end
 ```
 
-##### Table S3 (Simplicial closure probabilities at different points in time)
+##### Table 5 (Simplicial closure probabilities at different points in time)
 
 In describing how to reproduce Table S2, we showed how to get the closure probabilities at different points in time. The following code snippet prints out some of the statistics for other datasets, which are pre-computed and stored in the `output/3-node-closures/` directory.
 
@@ -445,11 +445,11 @@ closure_stats_over_time("DAWN")
 closure_stats_over_time("tags-stack-overflow")
 ```
 
-##### Table S4 (4-node configuration reference figures)
+##### Table 6 (4-node configuration reference figures)
 
 This table is just for illustration and does not present computational results.
 
-##### Table S5 (extra results from the Hodge decomposition)
+##### Table 7 (extra results from the Hodge decomposition)
 
 This table shows the results from using the Hodge decomposition to further decompose the simplicial personalized PageRank scores. Here is how one would reproduce the line for the NDC-classes dataset (numbers may be slightly different due to randomness).
 
@@ -462,6 +462,6 @@ collect_Simplicial_PPR_decomposed_scores(ndc_classes)  # collect scores
 evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) # print relative scores
 ```
 
-##### Table S6 (output predictions)
+##### Table S8 (output predictions)
 
 We showed how to look at the top predictions in the higher-order link prediction section above.
