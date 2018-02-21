@@ -2,9 +2,9 @@
 
 This Julia software accompanies the following paper:
 
-- Simplicial closure and higher-order link prediction.
+- [Simplicial closure and higher-order link prediction](https://arxiv.org/abs/1802.06916).
   Austin R. Benson, Rediet Abebe, Michael T. Schaub, Ali Jadbabaie, and Jon Kleinberg.
-  arXiv, 2018.
+  arXiv:1802.06916, 2018.
 
 This tutorial code is not the main software library for simplicial closure and higher-order link prediction, which is [ScHoLP.jl](https://github.com/arbenson/ScHoLP.jl). Instead, the tutorial has the following goals:
 
