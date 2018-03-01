@@ -6,7 +6,9 @@ Each simplex corresponds to a publication whose field of study includes the tag
 "History". Each node in a simplex is an author on the publication. A timestamp
 is the year of publication.
 
-The file coauth-MAG-History-node-labels.txt maps the node IDs to authors.
+Additional files are available from
+http://www.cs.cornell.edu/~arb/data/coauth-MAG-History/index.html
+that map the node IDs to names and the simplices to paper titles.
 
-The nth line in coauth-MAG-History-simplex-labels.txt is the title
-of the publication corresponding to the nth simplex.
+
+
