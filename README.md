@@ -4,7 +4,7 @@ This Julia software accompanies the following paper:
 
 - [Simplicial closure and higher-order link prediction](https://arxiv.org/abs/1802.06916).
   Austin R. Benson, Rediet Abebe, Michael T. Schaub, Ali Jadbabaie, and Jon Kleinberg.
-  arXiv:1802.06916, 2018.
+  Proceedings of the National Academy of Sciences, 2018.
 
 This tutorial code is not the main software library for simplicial closure and higher-order link prediction, which is [ScHoLP.jl](https://github.com/arbenson/ScHoLP.jl). Instead, the tutorial has the following goals:
 
@@ -37,7 +37,7 @@ The package comes with a few example datasets.
 ```julia
 using ScHoLP
 ex = example_dataset("example1")  # example from figure 1 of paper
-typeof(ex)  # should be ScHoLP.HONData
+typeof(ex)  # should be HONData
 ex.simplices, ex.nverts, ex.times, ex.name  # components of the data structure
 chs = example_dataset("contact-high-school")  # another dataset
 ```
