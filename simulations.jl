@@ -2,7 +2,8 @@ include("common.jl")
 
 using Combinatorics
 using Distributions
-using MAT
+using SparseArrays
+using FileIO, JLD2
 
 function simulate_summary_stats(n::Int64, p::Float64)
     bin = Binomial(binomial(n, 3), p)
@@ -47,7 +48,7 @@ function simulate()
             end
         end
     end
-    matwrite("simulation.mat",
-             Dict("n" => all_n, "b" => all_b, "density" => all_density,
-                  "ave_deg" => all_ave_deg, "frac_open" => all_frac_open))
+    save("output/simulation/simulation.jld2",
+         Dict("n" => all_n, "b" => all_b, "density" => all_density,
+              "ave_deg" => all_ave_deg, "frac_open" => all_frac_open))
 end
