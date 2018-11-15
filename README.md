@@ -34,10 +34,16 @@ This tutorial also requires some packages:
 
 ```julia
 using Pkg
+# For predictions
 Pkg.add("PyCall")
 Pkg.add("FileIO")
 Pkg.add("JLD2")
 Pkg.add("ScikitLearn")
+# For statistical tests
+Pkg.add("HypothesisTests")
+Pkg.add("GLM")
+Pkg.add("DataFrames")
+Pkg.add("CSV")
 ```
 
 ### Data
@@ -180,21 +186,21 @@ top_predictions(enron, "UPPR", 12)
 This should produce the following output
 
 ```
-1 (0.304908; 0): joe.stepenovitch@enron.com; don.baughman@enron.com; larry.campbell@enron.com
-2 (0.272448; 0): joe.stepenovitch@enron.com; don.baughman@enron.com; benjamin.rogers@enron.com
-3 (0.253939; 0): larry.campbell@enron.com; don.baughman@enron.com; benjamin.rogers@enron.com
-4 (0.189741; 0): joe.parks@enron.com; eric.bass@enron.com; dan.hyvl@enron.com
-5 (0.181000; 1): lisa.gang@enron.com; kate.symes@enron.com; bill.williams@enron.com
-6 (0.179424; 0): joe.quenet@enron.com; chris.dorland@enron.com; jeff.king@enron.com
-7 (0.176207; 0): joe.quenet@enron.com; jeff.king@enron.com; fletcher.sturm@enron.com
-8 (0.175591; 1): lisa.gang@enron.com; holden.salisbury@enron.com; kate.symes@enron.com
-9 (0.173161; 1): lisa.gang@enron.com; holden.salisbury@enron.com; bill.williams@enron.com
-10 (0.170872; 0): geir.solberg@enron.com; holden.salisbury@enron.com; kate.symes@enron.com
+1 (0.304992; 0): joe.stepenovitch@enron.com; don.baughman@enron.com; larry.campbell@enron.com
+2 (0.272495; 0): joe.stepenovitch@enron.com; don.baughman@enron.com; benjamin.rogers@enron.com
+3 (0.253992; 0): larry.campbell@enron.com; don.baughman@enron.com; benjamin.rogers@enron.com
+4 (0.189678; 0): joe.parks@enron.com; eric.bass@enron.com; dan.hyvl@enron.com
+5 (0.181085; 1): lisa.gang@enron.com; kate.symes@enron.com; bill.williams@enron.com
+6 (0.179377; 0): joe.quenet@enron.com; chris.dorland@enron.com; jeff.king@enron.com
+7 (0.176236; 0): joe.quenet@enron.com; jeff.king@enron.com; fletcher.sturm@enron.com
+8 (0.175624; 1): lisa.gang@enron.com; holden.salisbury@enron.com; kate.symes@enron.com
+9 (0.173160; 1): lisa.gang@enron.com; holden.salisbury@enron.com; bill.williams@enron.com
+10 (0.170947; 0): geir.solberg@enron.com; holden.salisbury@enron.com; kate.symes@enron.com
 11 (0.164845; 0): geir.solberg@enron.com; holden.salisbury@enron.com; bill.williams@enron.com
-12 (0.162414; 0): lisa.gang@enron.com; cara.semperger@enron.com; kate.symes@enron.com
+12 (0.162391; 0): lisa.gang@enron.com; cara.semperger@enron.com; kate.symes@enron.com
 ```
 
-These are the top 12 predictions for the unweighted personalized PageRank scores. The tuple next to the ordered numbers, e.g., (0.304908; 0) in the first line, gives the score function value and a 0/1 indicator of whether or not the open triangle closed in the final 20% of the dataset (1 means that it closed). Here, we see that the triples of nodes with the 5th, 8th, and 9th highest scores simplicially closed.
+These are the top 12 predictions for the unweighted personalized PageRank scores. The tuple next to the ordered numbers, e.g., (0.304992; 0) in the first line, gives the score function value and a 0/1 indicator of whether or not the open triangle closed in the final 20% of the dataset (1 means that it closed). Here, we see that the triples of nodes with the 5th, 8th, and 9th highest scores went through a simplicial closure event.
 
 ### Summary statistics
 
@@ -202,8 +208,10 @@ There is some basic functionality for gathering summary statistics about the dat
 
 ```julia
 chs = example_dataset("contact-high-school")
-basic_summary_statistics(chs)  # prints basic summary statistics (same as Table 1 in paper)
-summary_statistics(chs)  # more advanced statistics --> contact-high-school-statistics.csv
+# print basic summary statistics (same as Table 1 in paper)
+basic_summary_statistics(chs)
+# compute more advanced statistics --> contact-high-school-statistics.csv
+summary_statistics(chs);
 ```
 
 The last command writes several summary statistics to a csv file. For example, "meansimpsize" is the mean number of nodes in each simplex, "projdensity" is the edge density of the projected graph, and "nclosedtri" and "nopentri" are the number of closed and open triangles. The first line of the csv file are the variables, the first line are the statistics for the full dataset and the second line are the statistics for the dataset restricted to only 3-node simplices.
@@ -233,7 +241,7 @@ r2(model_fig_2f)  # roughly 0.85
 
 ##### Hypothesis tests for strong wedge vs. weak open triangle and strong flap vs. weak open wireframe
 
-Here we are testing hypotheses on whether stronger but fewer ties (strong wedge and flap) or weaker but more ties (weak open triangle and wireframe) are more indicative of simplicial closure.
+Here we are testing hypotheses on whether stronger but fewer ties or weaker but more ties are more indicative of simplicial closure.
 
 ```julia
 # starting from the main directory of tutorial code
