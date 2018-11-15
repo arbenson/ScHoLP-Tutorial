@@ -16,9 +16,9 @@ This tutorial code is not the main software library for simplicial closure and h
 As discussed above, this tutorial shows how to use the ScHoLP.jl library for higher-order network analysis and reproduction of results. To get the ScHoLP.jl library and start using it in Julia:
 
 ```julia
-Pkg.clone("https://github.com/arbenson/ScHoLP.jl.git")
+using Pkg
+Pkg.add("ScHoLP")
 Pkg.test("ScHoLP")
-using ScHoLP
 ```
 
 Note that ScHoLP.jl has thread-level parallelism available for many features (using Julia's Base.Threads).
@@ -28,6 +28,16 @@ To get started with this tutorial:
 ```bash
 git clone https://github.com/arbenson/ScHoLP-Tutorial.git
 cd ScHoLP-Tutorial
+```
+
+This tutorial also requires some packages:
+
+```julia
+using Pkg
+Pkg.add("PyCall")
+Pkg.add("FileIO")
+Pkg.add("JLD2")
+Pkg.add("ScikitLearn")
 ```
 
 ### Data
@@ -146,7 +156,7 @@ Now we can generate scores of the open triangles from the first 80% of the datas
 collect_local_scores(enron)  # scores based on local structural features
 collect_walk_scores(enron)  # scores based on random walks and paths
 collect_Simplicial_PPR_combined_scores(enron)  # scores based on Simplicial PPR
-collect_logreg_supervised_scores(enron)  # scores based on logistic regression supervised method
+collect_logreg_supervised_scores(enron)  # scores based on logistic regression
 ```
 
 Since enron is a small dataset, we can afford to decompose the Simplicial PPR scores into the gradient, curl, and harmonic components:
