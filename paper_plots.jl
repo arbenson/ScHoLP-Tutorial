@@ -1,7 +1,7 @@
 include("common.jl")
 
 using DataFrames
-using MAT
+using FileIO, JLD2
 using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
@@ -88,8 +88,8 @@ function dataset_structure_plots()
     show()
 end
 
-function simulation_plots()
-    data = matread("output/simulation/simulation.mat")
+function simulation_plot()
+    data = load("output/simulation/simulation.jld2")
     all_n         = data["n"]
     all_b         = data["b"]
     all_density   = data["density"]
@@ -97,61 +97,30 @@ function simulation_plots()
     all_frac_open = data["frac_open"]
     
     close()
-
+    figure()
     # Edge density
-    subplot(221)
     for (n, cm, marker) in [(200, ColorMap("Purples"), "d"),
                             (100, ColorMap("Reds"),    "<"),
                             (50,  ColorMap("Greens"),  "s"),
                             (25,  ColorMap("Blues"),   "o"),
                             ]
-        inds = find(all_n .== n)
+        inds = findall(all_n .== n)
         curr_b    = all_b[inds]
         density   = all_density[inds]
         frac_open = all_frac_open[inds]
-        scatter(density, frac_open, c=curr_b, marker=marker, label="$n", s=6,
-                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm,)
+        scatter(density, frac_open, c=curr_b, marker=marker, label="$n", s=14,
+                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm)
+        
     end
     ax = gca()
     ax[:set_xscale]("log")
-    fsz = 10
+    fsz = 20
+    ax[:tick_params]("both", labelsize=fsz-5, length=5, width=1)
+    legend()
     xlabel("Edge density in projected graph", fontsize=fsz)
     ylabel("Fraction of triangles open", fontsize=fsz)
-    title("Exactly 3 nodes per simplex (simulated)", fontsize=fsz)
-
-    # Average degree
-    subplot(223)
-    for (n, cm, marker) in [(200, ColorMap("Purples"), "d"),
-                            (100, ColorMap("Reds"),    "<"),
-                            (50,  ColorMap("Greens"),  "s"),
-                            (25,  ColorMap("Blues"),   "o"),
-                            ]
-        inds = find(all_n .== n)
-        curr_b    = all_b[inds]
-        ave_deg   = all_ave_deg[inds]
-        frac_open = all_frac_open[inds]
-        scatter(ave_deg, frac_open, c=curr_b, marker=marker, label="$n", s=6,
-                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm)
-    end
-    ax = gca()
-    ax[:set_xscale]("log")
-    fsz = 10
-    xlabel("Average degree in projected graph", fontsize=fsz)
-    ylabel("Fraction of triangles open", fontsize=fsz)
-    title("Exactly 3 nodes per simplex (simulated)", fontsize=fsz)    
-
-    # legend
-    subplot(224)
-    for (n, color, marker) in [(200, "purple", "d"),
-                               (100, "red",    "<"),
-                               (50,  "green",  "s"),
-                               (25,  "blue",   "o"),
-                               ]
-        scatter([1], [1], marker=marker, color=color, label="n = $n")
-    end
-    legend()    
     tight_layout()
-    savefig("simulation.pdf")
+    savefig("simulation.pdf", bbox_inches="tight")
     show()
 end
 
@@ -165,14 +134,16 @@ function simplex_size_dist_plot()
     subplot(221)
     for i in 1:length(datasets)
         dataset = datasets[i]
-        data = matread("output/simplex-size-dists/$dataset-simplex-size-dist.mat")
-        nvert = data["nvert"]
-        counts = data["counts"]
-        tot = sum(counts)
-        fracs = [count / tot for count in counts]
-        ms = (length(dataset) > 8 && dataset[1:8] == "congress") ? 6 : 2
-        loglog(nvert, fracs, marker=markers[i], color=colors[i],
-               linewidth=0.5, markersize=ms)
+        if dataset != "congress-committees" && dataset != "music-rap-genius"        
+            data = load("output/simplex-size-dists/$dataset-simplex-size-dist.jld2")
+            nvert = data["nvert"]
+            counts = data["counts"]
+            tot = sum(counts)
+            fracs = [count / tot for count in counts]
+            ms = 4
+            loglog(nvert, fracs, marker=markers[i], color=colors[i],
+                   linewidth=0.5, markersize=ms)
+        end
     end
     fsz = 10
     xlabel("Number of nodes in simplex", fontsize=fsz)
@@ -347,7 +318,7 @@ function four_node_scatter_plot()
     minval, maxval = min_max_val(probs0111, probs22)
     loglog([minval, maxval], [minval, maxval], "black", lw=0.5)
     for i in 1:length(datasets)
-        loglog(probs0111[i], probs22[i], markers[i], color=colors[i])
+        loglog(probs22[i], probs0111[i], markers[i], color=colors[i])
     end
     xlabel("Closure probability (0111)", fontsize=fsz)
     ylabel("Closure probability (22)", fontsize=fsz)    
@@ -400,4 +371,4 @@ function generalized_means_plot()
     savefig("generalized-means-perf.pdf")
     show()
 end
-
+;
