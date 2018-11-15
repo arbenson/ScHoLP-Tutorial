@@ -1,6 +1,9 @@
 include("common.jl")
+
+using CSV
 using HypothesisTests
 using DataFrames
+using Printf
 using GLM
 
 function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100, only_3_node::Bool=false)
@@ -63,11 +66,11 @@ function simplicial_closure_tests(significance::Float64=1e-5, X::Int64=100, only
                 total += 1
             end
         end
-        println(@sprintf("%s (left): %d of %d tests significant at < %g",
-                         test_type, sig_count1, total, significance))
-        println(@sprintf("%s (right): %d of %d tests significant at < %g",
-                         test_type, sig_count2, total, significance))
-        println(@sprintf("%s (raw): %d of %d", test_type, raw, total))
+        @printf("%s (left): %d of %d tests significant at < %g\n",
+                test_type, sig_count1, total, significance)
+        @printf("%s (right): %d of %d tests significant at < %g\n",
+                test_type, sig_count2, total, significance)
+        @printf("%s (raw): %d of %d\n", test_type, raw, total)
     end
 end
 
@@ -78,7 +81,7 @@ function fracopen_logavedeg_linear_models()
     frac_open3 = Float64[]
     ave_deg3   = Float64[]
     for dataset in datasets
-        data = readtable("output/summary-stats/$dataset-statistics.csv")
+        data = CSV.read("output/summary-stats/$dataset-statistics.csv")
         no = data[1, :nopentri]
         nc = data[1, :nclosedtri]
         push!(frac_open, no / (no + nc))

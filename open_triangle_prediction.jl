@@ -125,9 +125,9 @@ function collect_logreg_supervised_scores(dataset::HONData)
             X[12, ind] = length(common_jk)
             X[13, ind] = length(intersect(common_ij, common_ik, common_jk))
             X[14:22, ind] = log.(X[1:9, ind])
-            X[23:26, ind] = log.(X[10:13, ind] + 1.0)
+            X[23:26, ind] = log.(X[10:13, ind] .+ 1.0)
         end
-        return convert(SpFltMat, X')
+        return Matrix(X')
     end
     
     triangles = read_data(dataset, 80, 100)[1]
@@ -142,7 +142,7 @@ function collect_logreg_supervised_scores(dataset::HONData)
     train_simplices, train_nverts = split_data(simplices, nverts, times, 60, 80)[1:2]
     At_train, B_train = basic_matrices(train_simplices, train_nverts)[2:3]
     X_train = feature_matrix(train_triangles, At_train, B_train)
-    model = LogisticRegression(fit_intercept=true)
+    model = LogisticRegression(fit_intercept=true, solver="liblinear")
     ScikitLearn.fit!(model, X_train, val_labels)
     X = feature_matrix(triangles, At, B)
     learned_scores = ScikitLearn.predict_proba(model, X)[:, 2]
@@ -213,13 +213,13 @@ end
 function evaluate(dataset::HONData, score_types::Vector{String})
     triangles, labels = read_data(dataset, 80, 100)
     rand_rate = sum(labels .== 1) / length(labels)
-    println(printf("random: %0.2e", rand_rate))
+    @printf("random: %0.2e\n", rand_rate)
     for score_type in score_types
         scores = read_scores(dataset, score_type)
         assert(length(labels) == length(scores))
         ave_prec = average_precision_score(labels, scores)
         improvement = ave_prec / rand_rate
-        println(printf("%s: %0.2f", score_type, improvement))
+        @printf("%s: %0.2f\n", score_type, improvement)
     end
 end
 
@@ -238,14 +238,14 @@ Input parameters:
 """
 function top_predictions(dataset::HONData, score_type::String, topk::Int64=10)
     triangles, labels = read_data(dataset, 80, 100)
-    scores = read_scores(dataset, score_type)    
+    scores = read_scores(dataset, score_type)
     sp = sortperm(scores, alg=QuickSort, rev=true)
     node_labels = read_node_labels(dataset.name)
     for rank = 1:topk
         ind = sp[rank]
         i, j, k = triangles[ind]
-        println(printf("%d (%f; %d): %s; %s; %s", rank, scores[ind],
-                       labels[ind], node_labels[i], node_labels[j], node_labels[k]))
+        @printf("%d (%f; %d): %s; %s; %s\n", rank, scores[ind],
+                labels[ind], node_labels[i], node_labels[j], node_labels[k])
     end
 end
 
