@@ -2,10 +2,8 @@ include("common.jl")
 
 using ScHoLP
 
-using FileIO
 using LinearAlgebra
 using Printf
-using JLD2
 using PyCall
 
 using ScikitLearn
