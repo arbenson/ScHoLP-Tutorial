@@ -2,7 +2,6 @@ include("common.jl")
 
 using CSV
 using DataFrames
-using FileIO, JLD2
 using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
@@ -369,6 +368,97 @@ function generalized_means_plot()
     make_subplot(set3)    
     tight_layout()
     savefig("generalized-means-perf.pdf")
+    show()
+end
+
+function egonet_train_test_data(trial::Int64)
+    srand!(444)  # for reproducibility
+    data = load("output/egonets/egonet-data-$trial.mat")
+    X = data["X"]
+    y = data["labels"]
+    inds = randperm(length(labels))
+    X = X[inds, :]
+    labels = labels[inds]
+    
+    train_inds = Int64[]
+    test_inds  = Int64[]
+    for label in sort(unique(y))
+        inds = find(y .== label)
+        end_ind = convert(Int64, round(length(inds) * 0.8))
+        append!(train_inds, inds[1:end_ind])
+        append!(test_inds,  inds[(end_ind + 1):end])
+    end
+    
+    X_train, X_test = X[train_inds, :], X[test_inds, :]
+    y_train, y_test = y[train_inds], y[test_inds]    
+    return (X_train, X_test, y_train, y_test)
+end
+
+# decision_boundary(11)
+function decision_boundary(trial::Int64)
+    (X_train, _, y_train, _) = egonet_train_test_data(trial)    
+    model = LogisticRegression(fit_intercept=true, multi_class="multinomial", C=10,
+                               solver="newton-cg", max_iter=1000)
+    ScikitLearn.fit!(model, X_train, y_train)
+
+    dim = 500
+    minval1, maxval1 = minimum(X[:, 1]) - 0.5, maximum(X[:, 1]) * 1.02
+    minval2, maxval2 = minimum(X[:, 2]) - 0.01, maximum(X[:, 2]) + 0.05
+    grid_feats = zeros(Float64, 2, dim * dim)
+    grid_ind = 1
+    xx = [(i - 1) * (maxval1 - minval1) / dim + minval1 for i in 1:dim]
+    yy = [(j - 1) * (maxval2 - minval2) / dim + minval2 for j in 1:dim]
+    for x in xx
+        for y in yy
+            grid_feats[1, grid_ind] = x
+            grid_feats[2, grid_ind] = y
+            grid_ind += 1
+        end
+    end
+
+    close()
+    figure()
+    grid_feats = grid_feats'
+    Z = reshape(ScikitLearn.predict(model2, grid_feats), dim, dim)
+    labels = Dict(0 => "coauthorship", 1 => "tags", 2 => "threads",
+                  3 => "contact",      4 => "email")
+    greys = ["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363"]
+    contourf(e.^xx, yy, Z, colors=greys)
+    params = all_datasets_params()
+    label2domain = Dict(0  => 0,  1  => 0,  2  => 0,
+                        3  => -1,
+                        4  => 1,  5  => 1,  6  => 1,
+                        7  => 2,  8  => 2,  9  => 2,
+                        10 => -1, 11 => -1, 12 => -1, 13 => -1, 14 => -1,
+                        15 => 3,  16 => 3,
+                        17 => 4,  18 => 4)
+    colors = ["#e41a1c", "#377eb8", "#4daf4a", "#ff7f00", "#a65628"]
+    colors_full = ["#ed5e5f", "#e41a1c", "#9f1214", 
+                   "no-op",
+                   "#69a3d2", "#377eb8", "#25567d", 
+                   "#80c87d", "#4daf4a", "#357933", 
+                   "no-op", "no-op", "no-op", "no-op", "no-op",
+                   "#984ea3", "#68356f",
+                   "#d37a48", "#a65628"]
+    for label in sort(unique(y1_train))
+        inds = find(y1 .== label)
+        scatter(e.^X[inds, 1], X[inds, 2],
+                color=colors_full[label + 1],
+                marker="o",
+                label=params[label + 1][1],
+                s=14)
+    end
+    fsz = 18
+    legend(fontsize=fsz-4)
+    ax = gca()
+    ax[:set_xscale]("log")
+    xlabel("Average degree", fontsize=fsz)
+    ylabel("Fraction of triangles open", fontsize=fsz)
+    title("Decision boundary", fontsize=fsz)
+    ax[:set_xlim](1.8, 400)
+    ax[:tick_params](axis="both", length=3, labelsize=14)
+    tight_layout()
+    savefig("decision.pdf")
     show()
 end
 ;
