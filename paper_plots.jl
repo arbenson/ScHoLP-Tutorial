@@ -1,5 +1,6 @@
 include("common.jl")
 
+using CSV
 using DataFrames
 using FileIO, JLD2
 using PyPlot
@@ -17,7 +18,7 @@ function dataset_structure_plots()
     density3   = Float64[]
     ave_deg3   = Float64[]
     for dataset in datasets
-        data = readtable("output/summary-stats/$dataset-statistics.csv")
+        data = CSV.read("output/summary-stats/$dataset-statistics.csv")
         no = data[1, :nopentri]
         nc = data[1, :nclosedtri]
         push!(frac_open, no / (no + nc))
@@ -330,7 +331,7 @@ end
 
 function generalized_means_plot()
     close()
-    fsz=10
+    fsz=22
     function make_subplot(datasets)
         axvline(x=-1, ls="--", color="black", lw=1.0, label="harmonic")
         axvline(x=0,  ls="-",  color="black", lw=1.0, label="geometric")
@@ -339,7 +340,7 @@ function generalized_means_plot()
             dataset = param[1]
             if dataset in datasets
                 basename = "output/generalized-means/$dataset-open-tris-80-100"
-                data = matread("$basename-genmeans-perf.mat")
+                data = matread("$basename-genmeans-perf.jld2")
                 ps = data["ps"]
                 improvements = data["improvements"]
                 plot(ps[2:end-1], improvements[2:end-1],
@@ -354,11 +355,11 @@ function generalized_means_plot()
     end
         
     set1 = ["threads-stack-overflow", "threads-math-sx", "threads-ask-ubuntu"]
-    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu", "music-rap-genius",
+    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu",
             "contact-high-school", "contact-primary-school",
             "DAWN", "NDC-substances", "NDC-classes"]
     set3 = ["coauth-MAG-History", "coauth-MAG-Geology", "coauth-DBLP",
-            "email-Enron", "email-Eu", "congress-committees", "congress-bills"]
+            "email-Enron", "email-Eu", "congress-bills"]
     subplot(221)
     make_subplot(set1)
     legend(fontsize=fsz)
@@ -366,7 +367,6 @@ function generalized_means_plot()
     make_subplot(set2)    
     subplot(223)
     make_subplot(set3)    
-    
     tight_layout()
     savefig("generalized-means-perf.pdf")
     show()

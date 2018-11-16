@@ -2,9 +2,9 @@
 
 This Julia software accompanies the following paper:
 
-- [Simplicial closure and higher-order link prediction](https://arxiv.org/abs/1802.06916).
+- [Simplicial closure and higher-order link prediction](http://www.pnas.org/content/early/2018/11/08/1800683115).
   Austin R. Benson, Rediet Abebe, Michael T. Schaub, Ali Jadbabaie, and Jon Kleinberg.
-  Proceedings of the National Academy of Sciences, 2018.
+  *Proceedings of the National Academy of Sciences*, 2018.
 
 This tutorial code is not the main software library for simplicial closure and higher-order link prediction, which is [ScHoLP.jl](https://github.com/arbenson/ScHoLP.jl). Instead, the tutorial has the following goals:
 
@@ -30,20 +30,19 @@ git clone https://github.com/arbenson/ScHoLP-Tutorial.git
 cd ScHoLP-Tutorial
 ```
 
-This tutorial also requires some packages:
+To run this entire tutorial, you will also need several Julia packages (not all packages are needed for each component; you can add them as necessary).
 
 ```julia
 using Pkg
-# For predictions
-Pkg.add("PyCall")
-Pkg.add("FileIO")
-Pkg.add("JLD2")
-Pkg.add("ScikitLearn")
-# For statistical tests
-Pkg.add("HypothesisTests")
-Pkg.add("GLM")
-Pkg.add("DataFrames")
 Pkg.add("CSV")
+Pkg.add("DataFrames")
+Pkg.add("Distributions")
+Pkg.add("FileIO")
+Pkg.add("GLM")
+Pkg.add("HypothesisTests")
+Pkg.add("JLD2")
+Pkg.add("PyCall")
+Pkg.add("ScikitLearn")
 ```
 
 ### Data
@@ -174,7 +173,7 @@ collect_Simplicial_PPR_decomposed_scores(enron)
 We can evaluate how well these methods do compared to random guessing with respect to area under the precision-recall curve. This should reproduce the line for the email-Enron dataset in Table 2 of the paper.
 
 ```julia
-evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "SimpPPR_comb", "logreg_supervised", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"])
+evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "logreg_supervised"])
 ```
 
 We can also look at the top predictions made by the algorithms.
@@ -223,23 +222,23 @@ contact-high-school,327,172035,352718,2,5,32.644895,1.091537e-01,2370,31850,7937
 contact-high-school-3-3,317,7475,22425,3,3,8.305556,5.390728e-02,2091,5721,2126,6378,3.000000,2.362222,1.132810,1.118476e-01,2094,18139
 ```
 
-### Reproducing results
+### Reproducing results in the main text
 
 This section shows how to reproduce results from the paper.
 
-##### Linear models for relationships in Figures 2D and 2F
+##### Linear models for relationships in Figures 2D and 2E
 
 We create linear models for the fraction of triangles in terms of the covariate log average degree (plus an intercept term). The following code snippet produces these models.
 
 ```julia
 # starting from the main directory of tutorial code
 include("statistical_tests_and_models.jl")
-model_fig_2d, model_fig_2f = fracopen_logavedeg_linear_models();
-r2(model_fig_2d)  # roughly 0.38
-r2(model_fig_2f)  # roughly 0.85
+model_fig_2D, model_fig_2E = fracopen_logavedeg_linear_models();
+r2(model_fig_2D)  # roughly 0.38
+r2(model_fig_2E)  # roughly 0.85
 ```
 
-##### Hypothesis tests for strong wedge vs. weak open triangle and strong flap vs. weak open wireframe
+##### Hypothesis tests for fewer strong ties vs. more weaker ties
 
 Here we are testing hypotheses on whether stronger but fewer ties or weaker but more ties are more indicative of simplicial closure.
 
@@ -255,7 +254,13 @@ simplicial_closure_tests(1e-3)
 
 We saw how to get these numbers in the summary statistics section above. The `basic_summary_statistics()` function produces the numbers.
 
-##### Table 2 (Higher-order link prediction performance)
+##### Table 2 (Performance of logistic regression for system domain classification)
+
+
+
+
+
+##### Table 3 (Higher-order link prediction performance)
 
 The numbers in this table came from using the higher-order link prediction methods outlined above. Note that some of the score functions are computationally expensive. The necessary julia functions are 
 
@@ -274,18 +279,21 @@ using ScHoLP
 ex_fig1 = example_dataset("example1")
 
 # Print out simplices
-ind = 1
-for (nv, t) in zip(ex_fig1.nverts, ex_fig1.times)
-    simplex = ex_fig1.simplices[ind:(ind + nv - 1)]
-    ind += nv
-    println("$t $simplex")
+function print_simplices()
+	ind = 1
+	for (nv, t) in zip(ex_fig1.nverts, ex_fig1.times)
+    	simplex = ex_fig1.simplices[ind:(ind + nv - 1)]
+	    ind += nv
+	   	println("$t $simplex")
+	end
 end
+print_simplices()
 
 # Get the weighted projected graph
 basic_matrices(ex_fig1)[3]
 ```
 
-##### Figure 2A—B (legend and simplex size distribution)
+##### Figure 2A (simplex size distribution)
 
 Here is a sample code snippet for computing the simplex size distribution for the email-Enron dataset.
 
@@ -302,32 +310,39 @@ for (nv, f) in zip(num_verts, fracs)
 end
 ```
 
-For reproducing the figure, we have pre-computed the distributions in the files `output/simplex-size-dists/*-simplex-size-dist.mat`. The following produces the simplex size distribution and saves the figure.
+For reproducing the figure, we have pre-computed the distributions in the files `output/simplex-size-dists/*-simplex-size-dist.jld2`. The following produces the simplex size distribution and saves the figure.
 
 ```julia
 # starting from the main directory of tutorial code
 include("paper_plots.jl")
-simplex_size_dist_plot()  # produce figures 2AB --> simplex-size-dist.pdf
+# produce figure 2A --> simplex-size-dist.pdf
+simplex_size_dist_plot()
 ```
 
-##### Figure 2C—F (basic dataset structure)
+##### Figure 2B—E (basic dataset structure)
 
 These figures rely on using the `summary_statistics()` function for all of the datasets. For some of the larger datasets, this can take a while. For this tutorial, we include the pre-computed statistics are in the `output/summary-stats/` directory. The following code snippet reproduces the figure.
 
 ```julia
 # starting from the main directory of tutorial code
 include("paper_plots.jl")
-dataset_structure_plots()  # produce figures 2CDEF --> dataset-structure.pdf
+# produce figures 2BCDE --> dataset-structure.pdf
+dataset_structure_plots()
 ```
 
-##### Figure 2G—H (model simulation)
+##### Figure 3 (decision boundary)
+
+
+
+##### Figure 4 (model simulation)
 
 These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to `simulation.mat`.
 
 ```julia
 # starting from the main directory of tutorial code
 include("simulations.jl")
-simulate()  # run the simulations (takes several minutes) --> simulation.mat
+# run the simulations (takes several minutes)
+simulate()  # --> stores in output/simulation/simulation.jld2
 ```
 
 The simulation results used in the paper are stored in `output/simulation/simulation.mat` for convenience. The above code should produce something similar but not exactly the same (due to randomness in the simulation). The following code snippet reproduces figures 2GH.
@@ -335,53 +350,42 @@ The simulation results used in the paper are stored in `output/simulation/simula
 ```julia
 # starting from the main directory of tutorial code
 include("paper_plots.jl")
-simulation_plots()  # reproduce figures 2GH --> simulation.pdf
+simulation_plot()  # reproduce Figure 4 --> simulation.pdf
 ```
 
-##### Figure 3 (lifecycles)
+##### Figure 5 (lifecycles)
 
-Producing results from Figure 3A uses the `process_lifecycles()` function from the ScHoLP.jl library. Figures 3B—D use the `lifecycle()` function in `lifecycle_analysis.jl`.
+Producing results from Figure 5A uses the `process_lifecycles()` function from the ScHoLP.jl library. Figures 5B—D use the `lifecycle()` function in`lifecycle_analysis.jl`. 
 
 ```julia
-# starting from the main directory of tutorial code
 include("lifecycle_analysis.jl")
-hist = read_txt_data("coauth-MAG-History")  # read dataset from data/coauth-MAG-History directory
-# Get data from Figure 3A
+# read dataset from data/coauth-MAG-History directory
+hist = read_txt_data("coauth-MAG-History")  
+# Get data for Figure 5A (this may take a couple minutes)
 closed_transition_counts, open_transition_counts = process_lifecycles(hist)
 # direct transitions to simplicial closure from each state
 closed_transition_counts[end, 1:(end-1)]
-
-ndc_classes = read_txt_data("NDC-classes")  # read data from data/NDC-classes directory
+# read data from data/NDC-classes directory
+ndc_classes = read_txt_data("NDC-classes")  
 node_labels = read_node_labels("NDC-classes")
-node_labels[[44, 74, 76]]  # nodes in Figure 3B
+node_labels[[44, 74, 76]]  # nodes in Figure 5B
 lifecycle(ndc_classes, 44, 74, 76)
 ```
 
 The simplex labels in the last function call are NDC codes. For example, the first one is 67296-1236. This corresponds to Reyataz as produced by Redpharm Drug, Inc. in 2003, as recorded [here](https://ndclist.com/ndc/67296-1236/package/67296-1236-4).
 
-##### Figure 4 (3-node configuration closure probabilities)
+##### Figure 6 (3-node and 4-node configuration closure probabilities)
 
 This figure is constructed from the simplicial closure probabilities on 3-node configurations. Above, we showed how to compute these. We have pre-computed the probabilities for each dataset in the directory `output/3-node-closures/`.
 
 ```julia
 # starting from the main directory of tutorial code
 include("paper_plots.jl")
-closure_probs_heat_map(3)  # Figure 4A --> closure-probs-scatter-3.pdf
-three_node_scatter_plot()  # Figures 4BCD
+three_node_scatter_plot()  # Figures 6ABC --> closure-prob-scatter-3.pdf
+four_node_scatter_plot()   # Figures 6DEF --> closure-prob-scatter-4.pdf
 ```
 
-##### Figure 5 (4-node configuration closure probabilities)
-
-Similar to Figure 4, this figure is constructed from simplicial closure probabilities on 4-node configurations. We showed above how to compute these. We have pre-computed the probabilities for each dataset in `output/*-4-node-closures.txt`.
-
-```julia
-# starting from the main directory of tutorial code
-include("paper_plots.jl")
-closure_probs_heat_map(4)  # Figure 5A --> closure-probs-4.pdf
-four_node_scatter_plot()  # Figures 5BCD --> closure-prob-scatter-4.pdf
-```
-
-##### Figure 6 (generalized means)
+##### Figure 7 (generalized means)
 
 We first show how to collect the data for generalized means. The following code snippet should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.mat`.
 
@@ -401,7 +405,11 @@ include("paper_plots.jl")
 generalized_means_plot()  # Figure 6 --> generalized-means-perf.pdf
 ```
 
-##### Table 3 (temporal asynchroncity)
+
+
+### Reproduce results in the supplementary material
+
+##### Table S3 (temporal asynchroncity)
 
 To measure temporal asynchroncity in the datasets, we look at the number of "active interval" overlaps in the open triangles. The active interval is the time interval corresponding to the interval of time between the first and last simplices (in time) containing the two nodes.
 

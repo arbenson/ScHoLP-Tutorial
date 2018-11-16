@@ -216,7 +216,6 @@ function evaluate(dataset::HONData, score_types::Vector{String})
     @printf("random: %0.2e\n", rand_rate)
     for score_type in score_types
         scores = read_scores(dataset, score_type)
-        assert(length(labels) == length(scores))
         ave_prec = average_precision_score(labels, scores)
         improvement = ave_prec / rand_rate
         @printf("%s: %0.2f\n", score_type, improvement)
