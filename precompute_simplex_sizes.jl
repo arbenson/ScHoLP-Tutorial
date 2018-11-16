@@ -1,8 +1,5 @@
 include("common.jl")
 
-using FileIO, JLD2
-using StatsBase: countmap
-
 function main()
     datasets = [row[1] for row in all_datasets_params()]
     for dataset in datasets
