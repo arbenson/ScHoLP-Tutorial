@@ -1,9 +1,7 @@
 include("common.jl")
 
-using Combinatorics
 using Distributions
 using SparseArrays
-using FileIO, JLD2
 
 function simulate_summary_stats(n::Int64, p::Float64)
     bin = Binomial(binomial(n, 3), p)
