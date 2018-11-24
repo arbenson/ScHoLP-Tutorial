@@ -328,7 +328,7 @@ end
 
 function generalized_means_plot()
     close()
-    fsz=22
+    fsz=10
     function make_subplot(datasets)
         axvline(x=-1, ls="--", color="black", lw=1.0, label="harmonic")
         axvline(x=0,  ls="-",  color="black", lw=1.0, label="geometric")
@@ -337,7 +337,7 @@ function generalized_means_plot()
             dataset = param[1]
             if dataset in datasets
                 basename = "output/generalized-means/$dataset-open-tris-80-100"
-                data = matread("$basename-genmeans-perf.jld2")
+                data = load("$basename-genmeans-perf.jld2")
                 ps = data["ps"]
                 improvements = data["improvements"]
                 plot(ps[2:end-1], improvements[2:end-1],
@@ -350,7 +350,7 @@ function generalized_means_plot()
         ax[:set_xticks](-4:1:4)
         ax[:tick_params](axis="both", length=3)
     end
-        
+
     set1 = ["threads-stack-overflow", "threads-math-sx", "threads-ask-ubuntu"]
     set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu",
             "contact-high-school", "contact-primary-school",
