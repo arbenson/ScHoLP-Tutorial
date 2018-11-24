@@ -254,11 +254,17 @@ simplicial_closure_tests(1e-3)
 
 We saw how to get these numbers in the summary statistics section above. The `basic_summary_statistics()` function produces the numbers.
 
-##### Table 2 (Performance of logistic regression for system domain classification)
+##### Table 2 (logistic regression for system domain classification)
 
+Egonet data was collected with the function call `collect_egonet_data(100, 20)` in the file `egonet_analysis.jl`. This takes some time, so we pre-computed the data output and stored it in the directory `output/egonets`. We can reproduce the performance of the logistic regression models with the following code snippet.
 
-
-
+```julia
+include("egonet_analysis.jl")
+egonet_predict([LOG_DENSITY, LOG_AVE_DEG, FRAC_OPEN])
+egonet_predict([LOG_AVE_DEG, FRAC_OPEN])
+egonet_predict([LOG_DENSITY, FRAC_OPEN])
+egonet_predict([LOG_DENSITY, LOG_AVE_DEG])
+```
 
 ##### Table 3 (Higher-order link prediction performance)
 
@@ -267,8 +273,15 @@ The numbers in this table came from using the higher-order link prediction metho
 - `collect_labeled_dataset()` to generate the labeled dataset based on an 80/20 split of the data
 - `collect_local_scores()` to generate scores based on local structural features
 - `collect_walk_scores() ` to generate scores based on random walks and paths
-- `collect_Simplicial_PPR_combined_scores()` to generate scores based on simplicial PPR
 - `collect_logreg_supervised_scores()` to generate scores from the supervised learning method
+
+After collecting the data, we can reproduce results in the table with the following commands.
+
+```julia
+include("open_triangle_prediction.jl")
+enron = example_dataset("email-Enron")
+evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "adamic_adar", "proj_graph_PA", "UPKatz", "UPPR", "logreg_supervised"])
+```
 
 ##### Figure 1 (small example of higher-order network)
 
@@ -409,7 +422,7 @@ generalized_means_plot()  # Figure 6 --> generalized-means-perf.pdf
 
 ### Reproduce results in the supplementary material
 
-##### Table S3 (temporal asynchroncity)
+##### Table S1 (temporal asynchroncity)
 
 To measure temporal asynchroncity in the datasets, we look at the number of "active interval" overlaps in the open triangles. The active interval is the time interval corresponding to the interval of time between the first and last simplices (in time) containing the two nodes.
 
@@ -426,7 +439,7 @@ dataset & # open triangles & 0 overlaps & 1 overlap & 2 overlaps & 3 overlaps
 email-Enron & 3317 & 0.008 & 0.130 & 0.151 & 0.711
 ```
 
-##### Table 4 (dependence of tie strength and edge density at different points in time)
+##### Table S2 (dependence of tie strength and edge density at different points in time)
 
 The results from this table just use the core ScHoLP.jl functionality and the same function we saw above for the simplicial closure probabilities. We just provide an extra input parameter to the function `closure_type_counts3()` for pre-filtering the dataset to just start with the first X% of timestamped simplices.
 
@@ -449,7 +462,7 @@ for X in [40, 60, 80, 100]
 end
 ```
 
-##### Table 5 (Simplicial closure probabilities at different points in time)
+##### Table S3 (Simplicial closure probabilities at different points in time)
 
 In describing how to reproduce Table S2, we showed how to get the closure probabilities at different points in time. The following code snippet prints out some of the statistics for other datasets, which are pre-computed and stored in the `output/3-node-closures/` directory.
 
@@ -471,11 +484,16 @@ closure_stats_over_time("DAWN")
 closure_stats_over_time("tags-stack-overflow")
 ```
 
-##### Table 6 (4-node configuration reference figures)
+##### Table S5 (extra results from models)
 
-This table is just for illustration and does not present computational results.
+```julia
+include("open_triangle_prediction.jl")
+enron = read_txt_data("email-Enron")  # read from data/email-Enron directory
+collect_labeled_dataset(enron)
+evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "logreg_supervised"])
+```
 
-##### Table 7 (extra results from the Hodge decomposition)
+##### Table S6 (extra results from the Hodge decomposition)
 
 This table shows the results from using the Hodge decomposition to further decompose the simplicial personalized PageRank scores. Here is how one would reproduce the line for the NDC-classes dataset (numbers may be slightly different due to randomness).
 
@@ -488,6 +506,15 @@ collect_Simplicial_PPR_decomposed_scores(ndc_classes)  # collect scores
 evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) # print relative scores
 ```
 
-##### Table S8 (output predictions)
+##### Table S7 (output predictions)
 
-We showed how to look at the top predictions in the higher-order link prediction section above.
+We showed how to look at the top predictions in the higher-order link prediction section above. Here is the specific command to reproduce Table S7.
+
+```julia
+include("open_triangle_prediction.jl")
+dawn = read_txt_data("DAWN")  # need to download DAWN data to data/ directory
+collect_labeled_dataset(dawn)
+collect_local_scores(dawn)
+top_predictions(dawn, "adamic_adar", 25)
+```
+
