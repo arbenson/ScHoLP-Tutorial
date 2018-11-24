@@ -105,3 +105,4 @@ function fracopen_logavedeg_linear_models()
     model3 = lm(@formula(Y ~ X), data3)
     return (model, model3)
 end
+;
