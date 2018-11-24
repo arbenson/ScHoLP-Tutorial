@@ -67,7 +67,15 @@ ndc_classes = read_txt_data("NDC-classes")
 enron = read_txt_data("email-Enron")
 ```
 
-The collection of datasets from the paper are available from [this web site](http://www.cs.cornell.edu/~arb/data/).
+The collection of datasets from the paper are available from [this web site](http://www.cs.cornell.edu/~arb/data/). You can also download them wholesale and use them as follows.
+
+```bash
+cd ScHoLP-Tutorial/data
+wget https://github.com/arbenson/ScHoLP-Data/archive/1.0.tar.gz
+tar -xzvf 1.0.tar.gz
+gunzip ScHoLP-Data-1.0/*/*.gz
+mv ScHoLP-Data/* .
+```
 
 ### Simplicial closures
 
@@ -415,7 +423,7 @@ We pre-computed the generalized mean scores for all of the datasets in the paper
 ```julia
 # starting from the main directory of tutorial code
 include("paper_plots.jl")
-generalized_means_plot()  # Figure 6 --> generalized-means-perf.pdf
+generalized_means_plot()  # --> generalized-means-perf.pdf
 ```
 
 
