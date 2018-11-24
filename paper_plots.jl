@@ -166,16 +166,16 @@ function min_max_val(probs1::Vector{Float64}, probs2::Vector{Float64})
     return (minimum([p for p in probs if p > 0]), maximum(probs))
 end
 
-function closure_probs_heat_map(simplex_size::Int64)
+function closure_probs_heat_map(simplex_size::Int64, initial_cutoff::Int64=100)
     plot_params = all_datasets_params()
     datasets = [param[1] for param in plot_params]
 
-    keys, nsamples, nclosed = read_closure_stats(datasets[1], simplex_size)
+    keys, nsamples, nclosed = read_closure_stats(datasets[1], simplex_size, initial_cutoff)
     probs = nclosed ./ nsamples
     P = zeros(length(datasets), length(keys))
     insufficient_sample_inds = []
     for (ind, dataset) in enumerate(datasets)
-        keys, nsamples, nclosed = read_closure_stats(dataset, simplex_size)
+        keys, nsamples, nclosed = read_closure_stats(dataset, simplex_size, initial_cutoff)
         P[ind, :] = nclosed ./ nsamples
         for (key_ind, (key, nsamp)) in enumerate(zip(keys, nsamples))
             if nsamp <= 20
@@ -188,7 +188,7 @@ function closure_probs_heat_map(simplex_size::Int64)
     PyPlot.pygui(true)
 
     minval = max(1e-9, minimum([v for v in P[:] if v > 0]))
-    P[P[:] .== 0] = minval
+    P[P[:] .== 0] .= minval
     for (i, j) in insufficient_sample_inds; P[i, j] = 0; end
 
     cm = ColorMap("Blues")
@@ -205,16 +205,14 @@ function closure_probs_heat_map(simplex_size::Int64)
                                        facecolor=gray))
     end
     ax[:set_yticks](0:(length(datasets)-1))
-    #ax[:set_yticklabels](datasets, rotation=10, fontsize=(simplex_size == 4 ? 4 : 5))
     ax[:set_yticklabels](datasets, rotation=10, fontsize=(simplex_size == 4 ? 4 : 7))
     ax[:set_xticks](0:(length(probs)-1))
     ax[:tick_params](axis="both", length=3)
     ax[:set_xticklabels](["" for _ in 0:(length(probs)-1)])
-    #cb = colorbar(orientation="horizontal")
     cb = colorbar()
-    cb[:ax][:tick_params](labelsize=(simplex_size == 4 ? 18 : 9))
+    cb[:ax][:tick_params](labelsize=9)
     tight_layout()
-    savefig("closure-probs-$(simplex_size).pdf")
+    savefig("closure-probs-$(simplex_size)-$(initial_cutoff).pdf")
     show()
 end
 
