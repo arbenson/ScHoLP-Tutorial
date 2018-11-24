@@ -43,7 +43,7 @@ function read_closure_stats(dataset::String, simplex_size::Int64, initial_cutoff
     end
     for row_ind in 1:size(data, 1)
         row = convert(Vector{Int64}, data[row_ind, :])
-        push!(keys, (row[1:simplex_size]...))
+        push!(keys, tuple(row[1:simplex_size]...))
         push!(nsamples, row[end - 1])
         push!(nclosed, row[end])
     end
