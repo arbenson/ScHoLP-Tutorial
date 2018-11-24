@@ -357,7 +357,7 @@ dataset_structure_plots()
 
 ##### Figure 4 (model simulation)
 
-These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to `simulation.mat`.
+These figures require running simulations. Since the simulations are random, the output may not be exactly the same. The following will re-run the simulations and write the results to `simulation.jld2`.
 
 ```julia
 # starting from the main directory of tutorial code
@@ -366,7 +366,7 @@ include("simulations.jl")
 simulate()  # --> stores in output/simulation/simulation.jld2
 ```
 
-The simulation results used in the paper are stored in `output/simulation/simulation.mat` for convenience. The above code should produce something similar but not exactly the same (due to randomness in the simulation). The following code snippet reproduces figures 2GH.
+The simulation results used in the paper are stored in `output/simulation/simulation.jld2` for convenience. The above code should produce something similar but not exactly the same (due to randomness in the simulation). The following code snippet reproduces figures 2GH.
 
 ```julia
 # starting from the main directory of tutorial code
@@ -408,7 +408,7 @@ four_node_scatter_plot()   # Figures 6DEF --> closure-prob-scatter-4.pdf
 
 ##### Figure 7 (generalized means)
 
-We first show how to collect the data for generalized means. The following code snippet should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.mat`.
+We first show how to collect the data for generalized means. The following code snippet should produce an output file `prediction-output/email-Enron-open-tris-80-100-genmeans-perf.jld2`.
 
 ```julia
 # starting from the main directory of tutorial code
