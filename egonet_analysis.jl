@@ -2,6 +2,8 @@ include("common.jl")
 
 using DataFrames
 using GLM
+using Printf
+using Random
 using Statistics
 
 using ScikitLearn
@@ -83,10 +85,10 @@ function egonet_stats(dataset_name::String, num_egos::Int64)
 end
 
 function collect_egonet_data(num_egos::Int64, trial::Int64)
-    srand(1234 * trial)  # reproducibility
+    Random.seed!(1234 * trial)  # reproducibility
     dataset_names = [row[1] for row in all_datasets_params()]
     ndatasets = length(dataset_names)
-    X = Array{Float64,2}(0, NUM_FEATS)
+    X = zeros(Float64, 0, NUM_FEATS)
     labels = Int64[]
     for (ind, dname) in enumerate(dataset_names)
         println("$dname...")
@@ -129,6 +131,6 @@ function egonet_predict(feat_cols::Vector{Int64})
         push!(accs_rnd, rand_prob)
     end
 
-    @printf("%0.2f \pm %0.2f", mean(accs_mlr), std(accs_mlr))
-    @printf("%0.2f \pm %0.2f", mean(accs_rnd), std(accs_rnd))
+    @printf("%0.2f +/- %0.2f", mean(accs_mlr), std(accs_mlr))
+    @printf("%0.2f +/- %0.2f", mean(accs_rnd), std(accs_rnd))
 end
