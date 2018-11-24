@@ -518,3 +518,26 @@ collect_local_scores(dawn)
 top_predictions(dawn, "adamic_adar", 25)
 ```
 
+##### Figure S1 (heat map of 3-node closures)
+
+```julia
+include("paper_plots.jl")
+closure_probs_heat_map(3)
+```
+
+##### Figure S2 (heat map of 4-node closures)
+
+```julia
+include("paper_plots.jl")
+closure_probs_heat_map(3)
+```
+
+##### Figure S3 (heat map of 3-node closures at different points in time)
+
+```julia
+include("paper_plots.jl")
+for X in [40, 60, 80, 100]
+	closure_probs_heat_map(3, X)
+end
+```
+
