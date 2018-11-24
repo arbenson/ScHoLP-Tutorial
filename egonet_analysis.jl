@@ -4,6 +4,7 @@ using DataFrames
 using GLM
 using Printf
 using Random
+using SparseArrays
 using Statistics
 
 using ScikitLearn
@@ -17,8 +18,8 @@ const FRAC_OPEN   = 3
 # Construct HONData for a given ego
 function egonet_dataset(dataset::HONData, ego::Int64, B::SpIntMat)
     in_egonet = zeros(Bool, size(B, 1))
-    in_egonet[ego] .= true
-    in_egonet[findnz(B[:, ego])] .= true
+    in_egonet[ego] = true
+    in_egonet[findnz(B[:, ego])[1]] .= true
 
     node_map = Dict{Int64, Int64}()
     function get_key(x::Int64)
@@ -65,8 +66,8 @@ function egonet_stats(dataset_name::String, num_egos::Int64)
 
     X = zeros(Float64, NUM_FEATS, length(sampled_egos))
     for (j, ego) in enumerate(sampled_egos)
-        print("$j \r")
-        flush(STDOUT)
+        print(stdout, "$j \r")
+        flush(stdout)
         egonet = egonet_dataset(dataset, ego, B1)
         A, At, B = basic_matrices(egonet.simplices, egonet.nverts)
 
