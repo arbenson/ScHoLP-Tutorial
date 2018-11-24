@@ -7,7 +7,15 @@ using ScHoLP
 using StatsBase
 
 function read_txt_data(dataset::String)
-    read(filename::String) = convert(Vector{Int64}, readdlm(filename, Int64)[:, 1])
+    function read(filename::String)
+        ret = Int64[]
+        open(filename) do f
+            for line in eachline(f)
+                push!(ret, parse(Int64, line))
+            end
+        end
+        return ret
+    end
     return HONData(read("data/$(dataset)/$(dataset)-simplices.txt"),
                    read("data/$(dataset)/$(dataset)-nverts.txt"),
                    read("data/$(dataset)/$(dataset)-times.txt"),
