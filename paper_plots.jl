@@ -6,6 +6,9 @@ using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
 
+using ScikitLearn
+@sk_import linear_model: LogisticRegression
+
 function dataset_structure_plots()
     plot_params = all_datasets_params()
     datasets = [row[1] for row in plot_params]
@@ -369,12 +372,12 @@ function generalized_means_plot()
     show()
 end
 
-# decision_boundary(11)
-function decision_boundary(trial::Int64)
-    (X_train, _, y_train, _) = egonet_train_test_data(trial)    
+function logreg_decision_boundary(trial::Int64=1)
+    (X, _, y, _) = egonet_train_test_data(trial)
+    X = X[:, [LOG_AVE_DEG, FRAC_OPEN]]
     model = LogisticRegression(fit_intercept=true, multi_class="multinomial", C=10,
                                solver="newton-cg", max_iter=1000)
-    ScikitLearn.fit!(model, X_train, y_train)
+    ScikitLearn.fit!(model, X, y)
 
     dim = 500
     minval1, maxval1 = minimum(X[:, 1]) - 0.5, maximum(X[:, 1]) * 1.02
@@ -383,22 +386,19 @@ function decision_boundary(trial::Int64)
     grid_ind = 1
     xx = [(i - 1) * (maxval1 - minval1) / dim + minval1 for i in 1:dim]
     yy = [(j - 1) * (maxval2 - minval2) / dim + minval2 for j in 1:dim]
-    for x in xx
-        for y in yy
-            grid_feats[1, grid_ind] = x
-            grid_feats[2, grid_ind] = y
-            grid_ind += 1
-        end
+    for x in xx, y in yy
+        grid_feats[1, grid_ind] = x
+        grid_feats[2, grid_ind] = y
+        grid_ind += 1
     end
 
     close()
     figure()
-    grid_feats = grid_feats'
-    Z = reshape(ScikitLearn.predict(model2, grid_feats), dim, dim)
+    Z = reshape(ScikitLearn.predict(model, Matrix(grid_feats')), dim, dim)
     labels = Dict(0 => "coauthorship", 1 => "tags", 2 => "threads",
                   3 => "contact",      4 => "email")
     greys = ["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363"]
-    contourf(e.^xx, yy, Z, colors=greys)
+    contourf(exp.(xx), yy, Z, colors=greys)
     params = all_datasets_params()
     label2domain = Dict(0  => 0,  1  => 0,  2  => 0,
                         3  => -1,
@@ -415,9 +415,9 @@ function decision_boundary(trial::Int64)
                    "no-op", "no-op", "no-op", "no-op", "no-op",
                    "#984ea3", "#68356f",
                    "#d37a48", "#a65628"]
-    for label in sort(unique(y1_train))
-        inds = find(y1 .== label)
-        scatter(e.^X[inds, 1], X[inds, 2],
+    for label in sort(unique(y))
+        inds = findall(y .== label)
+        scatter(exp.(X[inds, 1]), X[inds, 2],
                 color=colors_full[label + 1],
                 marker="o",
                 label=params[label + 1][1],

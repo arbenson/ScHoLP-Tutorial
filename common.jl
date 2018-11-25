@@ -5,7 +5,13 @@ using FileIO
 using JLD2
 using Random
 using ScHoLP
+using SparseArrays
 using StatsBase
+
+const NUM_FEATS = 3
+const LOG_AVE_DEG = 1
+const LOG_DENSITY = 2
+const FRAC_OPEN   = 3
 
 function read_txt_data(dataset::String)
     function read(filename::String)

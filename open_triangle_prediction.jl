@@ -173,7 +173,7 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     write_scores(dataset, "SimpPPR_grad", scores_grad)
     write_scores(dataset, "SimpPPR_curl", scores_curl)
-    write_scores(dataset, "SimpPPR_harm", scores_harm)            
+    write_scores(dataset, "SimpPPR_harm", scores_harm)           
     save("$basename-SimpPPR_comb.jld2",
          Dict("S" => S_comb, "edge_map" => edge_map))
     save("$basename-SimpPPR_grad.jld2",
