@@ -154,7 +154,7 @@ function collect_Simplicial_PPR_combined_scores(dataset::HONData)
     A = basic_matrices(old_simplices, old_nverts)[1]
     basename = basename_str(dataset.name)    
 
-    (scores_comb, S_comb, edge_map) = Simplicial_PPR3_combined(triangles, A, 0.85)
+    (scores_comb, S_comb, edge_map) = Simplicial_PPR3_combined(triangles, A, true, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     save("$basename-SimpPPR_comb.jld2",
          Dict("S" => S_comb, "edge_map" => edge_map))
@@ -169,7 +169,7 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
     
     (scores_comb, scores_curl, scores_grad, scores_harm,
      S_comb,      S_curl,      S_grad,      S_harm, edge_map) =
-         Simplicial_PPR3_decomposed(triangles, A, false, 0.85)
+         Simplicial_PPR3_decomposed(triangles, A, true, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     write_scores(dataset, "SimpPPR_grad", scores_grad)
     write_scores(dataset, "SimpPPR_curl", scores_curl)
