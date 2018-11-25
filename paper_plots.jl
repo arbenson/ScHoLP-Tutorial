@@ -373,7 +373,7 @@ function generalized_means_plot()
 end
 
 function logreg_decision_boundary(trial::Int64=1)
-    (X, _, y, _) = egonet_train_test_data(trial)
+    (X, _, y, _, yf, _) = egonet_train_test_data(trial)
     X = X[:, [LOG_AVE_DEG, FRAC_OPEN]]
     model = LogisticRegression(fit_intercept=true, multi_class="multinomial", C=10,
                                solver="newton-cg", max_iter=1000)
@@ -407,7 +407,6 @@ function logreg_decision_boundary(trial::Int64=1)
                         10 => -1, 11 => -1, 12 => -1, 13 => -1, 14 => -1,
                         15 => 3,  16 => 3,
                         17 => 4,  18 => 4)
-    colors = ["#e41a1c", "#377eb8", "#4daf4a", "#ff7f00", "#a65628"]
     colors_full = ["#ed5e5f", "#e41a1c", "#9f1214", 
                    "no-op",
                    "#69a3d2", "#377eb8", "#25567d", 
@@ -415,12 +414,12 @@ function logreg_decision_boundary(trial::Int64=1)
                    "no-op", "no-op", "no-op", "no-op", "no-op",
                    "#984ea3", "#68356f",
                    "#d37a48", "#a65628"]
-    for label in sort(unique(y))
-        inds = findall(y .== label)
+    for label in sort(unique(yf))
+        inds = findall(yf .== label)
         scatter(exp.(X[inds, 1]), X[inds, 2],
-                color=colors_full[label + 1],
+                color=colors_full[label],
                 marker="o",
-                label=params[label + 1][1],
+                label=params[label][1],
                 s=14)
     end
     fsz = 18

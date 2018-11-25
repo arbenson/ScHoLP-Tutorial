@@ -129,8 +129,8 @@ function egonet_predict(feat_cols::Vector{Int64})
     accs_mlr = Float64[]
     accs_rnd = Float64[]
 
-    for trial in 1:1
-        (X_train, X_test, y_train, y_test) = egonet_train_test_data(trial)
+    for trial in 1:20
+        (X_train, X_test, y_train, y_test) = egonet_train_test_data(trial)[1:4]
         @show typeof(X_train)
         @show typeof(X_test)
         @show typeof(y_train)

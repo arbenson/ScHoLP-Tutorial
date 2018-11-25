@@ -68,11 +68,13 @@ end
 function egonet_train_test_data(trial::Int64)
     Random.seed!(444)  # for reproducibility
     data = load("output/egonets/egonet-data-$trial.jld2")
-    X = Matrix(data["X"])
+    X = data["X"]
     y = data["labels"]
+    yf = data["full_labels"]
     inds = randperm(length(y))
     X = X[inds, :]
     y = y[inds]
+    yf = yf[inds]
     
     train_inds = Int64[]
     test_inds  = Int64[]
@@ -84,8 +86,9 @@ function egonet_train_test_data(trial::Int64)
     end
     
     X_train, X_test = X[train_inds, :], X[test_inds, :]
-    y_train, y_test = y[train_inds], y[test_inds]    
-    return (X_train, X_test, y_train, y_test)
+    y_train, y_test = y[train_inds], y[test_inds]
+    yf_train, yf_test = yf[train_inds], yf[test_inds]    
+    return (X_train, X_test, y_train, y_test, yf_train, yf_test)
 end
 
 # This is just a convenient wrapper around all of the formatting parameters for

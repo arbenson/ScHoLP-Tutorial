@@ -16,7 +16,7 @@ This tutorial code is not the main software library for simplicial closure and h
 As discussed above, this tutorial shows how to use the ScHoLP.jl library for higher-order network analysis and reproduction of results. To get the ScHoLP.jl library and start using it in Julia:
 
 ```julia
-using Pkg
+import Pkg
 Pkg.add("ScHoLP")
 Pkg.test("ScHoLP")
 ```
@@ -33,7 +33,7 @@ cd ScHoLP-Tutorial
 To run this entire tutorial, you will also need several Julia packages (not all packages are needed for each component; you can add them as necessary).
 
 ```julia
-using Pkg
+import Pkg
 Pkg.add("CSV")
 Pkg.add("DataFrames")
 Pkg.add("Distributions")
@@ -168,20 +168,14 @@ Now we can generate scores of the open triangles from the first 80% of the datas
 ```julia
 collect_local_scores(enron)  # scores based on local structural features
 collect_walk_scores(enron)  # scores based on random walks and paths
-collect_Simplicial_PPR_combined_scores(enron)  # scores based on Simplicial PPR
 collect_logreg_supervised_scores(enron)  # scores based on logistic regression
-```
-
-Since enron is a small dataset, we can afford to decompose the Simplicial PPR scores into the gradient, curl, and harmonic components:
-
-```julia
-collect_Simplicial_PPR_decomposed_scores(enron)
+collect_Simplicial_PPR_decomposed_scores(enron)  # scores based on Simplicial PPR
 ```
 
 We can evaluate how well these methods do compared to random guessing with respect to area under the precision-recall curve. This should reproduce the line for the email-Enron dataset in Table 2 of the paper.
 
 ```julia
-evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "logreg_supervised"])
+evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl", "logreg_supervised"])
 ```
 
 We can also look at the top predictions made by the algorithms.
@@ -351,9 +345,14 @@ include("paper_plots.jl")
 dataset_structure_plots()
 ```
 
-##### Figure 3 (decision boundary)
+##### Figure 3 (logistic regression decision boundary)
 
+Plot the decision boundary for the logistic regression classifier. 
 
+```julia
+include("paper_plots.jl")
+logreg_decision_boundary()
+```
 
 ##### Figure 4 (model simulation)
 
@@ -494,24 +493,38 @@ closure_stats_over_time("tags-stack-overflow")
 
 ##### Table S5 (extra results from models)
 
+Example to get all of the results form the Enron dataset.
+
 ```julia
 include("open_triangle_prediction.jl")
 enron = read_txt_data("email-Enron")  # read from data/email-Enron directory
 collect_labeled_dataset(enron)
-evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "logreg_supervised"])
+collect_local_scores(enron)  # scores based on local structural features
+collect_walk_scores(enron)  # scores based on random walks and paths
+collect_logreg_supervised_scores(enron)  # scores based on logistic regression
+collect_Simplicial_PPR_decomposed_scores(enron)  # scores based on Simplicial PPR
+evaluate(enron, ["harm_mean", "geom_mean", "arith_mean", "common", "jaccard", "adamic_adar", "proj_graph_PA", "simplex_PA", "UPKatz", "WPKatz", "UPPR", "WPPR", "SimpPPR_comb", "logreg_supervised"])
 ```
 
 ##### Table S6 (extra results from the Hodge decomposition)
 
-This table shows the results from using the Hodge decomposition to further decompose the simplicial personalized PageRank scores. Here is how one would reproduce the line for the NDC-classes dataset (numbers may be slightly different due to randomness).
+This table shows the results from using the Hodge decomposition to further decompose the simplicial personalized PageRank scores. Note that this software uses the newer normalization method described in the following paper:
+
+- [Random walks on simplicial complexes and the normalized Hodge Laplacian](https://arxiv.org/abs/1807.05044). Michael T. Schaub, Austin R. Benson, Paul Horn, Gabor Lippner, and Ali Jadbabaie. *arXiv:1807.05044*, 2018.
+
+Here is how one would reproduce the line for the NDC-classes dataset.
 
 ```julia
 # starting from the main directory of tutorial code
 include("open_triangle_prediction.jl")
-ndc_classes = read_txt_data("NDC-classes")  # read data from data/NDC-classes directory
-collect_labeled_dataset(ndc_classes)  # collect the data from the 80/20 split
-collect_Simplicial_PPR_decomposed_scores(ndc_classes)  # collect scores
-evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) # print relative scores
+# read data from data/NDC-classes directory
+ndc_classes = read_txt_data("NDC-classes")  
+# collect the data from the 80/20 split
+collect_labeled_dataset(ndc_classes)  
+# collect scores
+collect_Simplicial_PPR_decomposed_scores(ndc_classes)  
+# print relative scores
+evaluate(ndc_classes, ["SimpPPR_comb", "SimpPPR_grad", "SimpPPR_harm", "SimpPPR_curl"]) 
 ```
 
 ##### Table S7 (output predictions)
