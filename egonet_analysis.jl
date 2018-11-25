@@ -53,17 +53,30 @@ end
 function egonet_stats(dataset_name::String, num_egos::Int64)
     # read data
     dataset = read_txt_data(dataset_name)
-    B1 = basic_matrices(dataset.simplices, dataset.nverts)[3]
-
-    # Sample egos
-    degs = vec(sum(B1, dims=1))
-    eligible_egos = findall(degs .> 1)
+    A1, At1, B1 = basic_matrices(dataset.simplices, dataset.nverts)
+    
+    # Get eligible egos
+    n = size(B1, 1)
+    tri_order = proj_graph_degree_order(B1)
+    in_tri = zeros(Int64, n, Threads.nthreads())
+    Threads.@threads for i = 1:n
+        for (j, k) in neighbor_pairs(B1, tri_order, i)
+            if B1[j, k] > 0
+                tid = Threads.threadid()
+                in_tri[[i, j, k], tid] .= 1
+            end
+        end
+    end
+    eligible_egos = findall(vec(sum(in_tri, dims=2)) .> 0)
     num_eligible = length(eligible_egos)
     println("$num_eligible eligible egos")
+    
+    # Sample from eligible egos
     sampled_egos =
         eligible_egos[StatsBase.sample(1:length(eligible_egos),
                                        num_egos, replace=false)]
 
+    # Collect statistics
     X = zeros(Float64, NUM_FEATS, length(sampled_egos))
     for (j, ego) in enumerate(sampled_egos)
         print(stdout, "$j \r")
@@ -121,8 +134,12 @@ function egonet_predict(feat_cols::Vector{Int64})
     accs_mlr = Float64[]
     accs_rnd = Float64[]
 
-    for trial in 1:20
+    for trial in 1:2
         (X_train, X_test, y_train, y_test) = egonet_train_test_data(trial)
+        @show typeof(X_train)
+        @show typeof(X_test)
+        @show typeof(y_train)
+        @show typeof(y_test)        
         model = LogisticRegression(fit_intercept=true, multi_class="multinomial",
                                    C=10, solver="newton-cg", max_iter=10000)
         ScikitLearn.fit!(model, X_train, y_train)

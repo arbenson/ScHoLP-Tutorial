@@ -369,29 +369,6 @@ function generalized_means_plot()
     show()
 end
 
-function egonet_train_test_data(trial::Int64)
-    srand!(444)  # for reproducibility
-    data = load("output/egonets/egonet-data-$trial.mat")
-    X = data["X"]
-    y = data["labels"]
-    inds = randperm(length(labels))
-    X = X[inds, :]
-    labels = labels[inds]
-    
-    train_inds = Int64[]
-    test_inds  = Int64[]
-    for label in sort(unique(y))
-        inds = find(y .== label)
-        end_ind = convert(Int64, round(length(inds) * 0.8))
-        append!(train_inds, inds[1:end_ind])
-        append!(test_inds,  inds[(end_ind + 1):end])
-    end
-    
-    X_train, X_test = X[train_inds, :], X[test_inds, :]
-    y_train, y_test = y[train_inds], y[test_inds]    
-    return (X_train, X_test, y_train, y_test)
-end
-
 # decision_boundary(11)
 function decision_boundary(trial::Int64)
     (X_train, _, y_train, _) = egonet_train_test_data(trial)    
