@@ -1,10 +1,13 @@
 include("common.jl")
 
+using CSV
 using DataFrames
-using MAT
 using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
+
+using ScikitLearn
+@sk_import linear_model: LogisticRegression
 
 function dataset_structure_plots()
     plot_params = all_datasets_params()
@@ -17,7 +20,7 @@ function dataset_structure_plots()
     density3   = Float64[]
     ave_deg3   = Float64[]
     for dataset in datasets
-        data = readtable("output/summary-stats/$dataset-statistics.csv")
+        data = CSV.read("output/summary-stats/$dataset-statistics.csv")
         no = data[1, :nopentri]
         nc = data[1, :nclosedtri]
         push!(frac_open, no / (no + nc))
@@ -88,8 +91,8 @@ function dataset_structure_plots()
     show()
 end
 
-function simulation_plots()
-    data = matread("output/simulation/simulation.mat")
+function simulation_plot()
+    data = load("output/simulation/simulation.jld2")
     all_n         = data["n"]
     all_b         = data["b"]
     all_density   = data["density"]
@@ -97,61 +100,30 @@ function simulation_plots()
     all_frac_open = data["frac_open"]
     
     close()
-
+    figure()
     # Edge density
-    subplot(221)
     for (n, cm, marker) in [(200, ColorMap("Purples"), "d"),
                             (100, ColorMap("Reds"),    "<"),
                             (50,  ColorMap("Greens"),  "s"),
                             (25,  ColorMap("Blues"),   "o"),
                             ]
-        inds = find(all_n .== n)
+        inds = findall(all_n .== n)
         curr_b    = all_b[inds]
         density   = all_density[inds]
         frac_open = all_frac_open[inds]
-        scatter(density, frac_open, c=curr_b, marker=marker, label="$n", s=6,
-                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm,)
+        scatter(density, frac_open, c=curr_b, marker=marker, label="$n", s=14,
+                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm)
+        
     end
     ax = gca()
     ax[:set_xscale]("log")
-    fsz = 10
+    fsz = 20
+    ax[:tick_params]("both", labelsize=fsz-5, length=5, width=1)
+    legend()
     xlabel("Edge density in projected graph", fontsize=fsz)
     ylabel("Fraction of triangles open", fontsize=fsz)
-    title("Exactly 3 nodes per simplex (simulated)", fontsize=fsz)
-
-    # Average degree
-    subplot(223)
-    for (n, cm, marker) in [(200, ColorMap("Purples"), "d"),
-                            (100, ColorMap("Reds"),    "<"),
-                            (50,  ColorMap("Greens"),  "s"),
-                            (25,  ColorMap("Blues"),   "o"),
-                            ]
-        inds = find(all_n .== n)
-        curr_b    = all_b[inds]
-        ave_deg   = all_ave_deg[inds]
-        frac_open = all_frac_open[inds]
-        scatter(ave_deg, frac_open, c=curr_b, marker=marker, label="$n", s=6,
-                vmin=minimum(curr_b) - 0.5, vmax=maximum(curr_b) + 0.5, cmap=cm)
-    end
-    ax = gca()
-    ax[:set_xscale]("log")
-    fsz = 10
-    xlabel("Average degree in projected graph", fontsize=fsz)
-    ylabel("Fraction of triangles open", fontsize=fsz)
-    title("Exactly 3 nodes per simplex (simulated)", fontsize=fsz)    
-
-    # legend
-    subplot(224)
-    for (n, color, marker) in [(200, "purple", "d"),
-                               (100, "red",    "<"),
-                               (50,  "green",  "s"),
-                               (25,  "blue",   "o"),
-                               ]
-        scatter([1], [1], marker=marker, color=color, label="n = $n")
-    end
-    legend()    
     tight_layout()
-    savefig("simulation.pdf")
+    savefig("simulation.pdf", bbox_inches="tight")
     show()
 end
 
@@ -165,14 +137,16 @@ function simplex_size_dist_plot()
     subplot(221)
     for i in 1:length(datasets)
         dataset = datasets[i]
-        data = matread("output/simplex-size-dists/$dataset-simplex-size-dist.mat")
-        nvert = data["nvert"]
-        counts = data["counts"]
-        tot = sum(counts)
-        fracs = [count / tot for count in counts]
-        ms = (length(dataset) > 8 && dataset[1:8] == "congress") ? 6 : 2
-        loglog(nvert, fracs, marker=markers[i], color=colors[i],
-               linewidth=0.5, markersize=ms)
+        if dataset != "congress-committees" && dataset != "music-rap-genius"        
+            data = load("output/simplex-size-dists/$dataset-simplex-size-dist.jld2")
+            nvert = data["nvert"]
+            counts = data["counts"]
+            tot = sum(counts)
+            fracs = [count / tot for count in counts]
+            ms = 4
+            loglog(nvert, fracs, marker=markers[i], color=colors[i],
+                   linewidth=0.5, markersize=ms)
+        end
     end
     fsz = 10
     xlabel("Number of nodes in simplex", fontsize=fsz)
@@ -195,16 +169,16 @@ function min_max_val(probs1::Vector{Float64}, probs2::Vector{Float64})
     return (minimum([p for p in probs if p > 0]), maximum(probs))
 end
 
-function closure_probs_heat_map(simplex_size::Int64)
+function closure_probs_heat_map(simplex_size::Int64, initial_cutoff::Int64=100)
     plot_params = all_datasets_params()
     datasets = [param[1] for param in plot_params]
 
-    keys, nsamples, nclosed = read_closure_stats(datasets[1], simplex_size)
+    keys, nsamples, nclosed = read_closure_stats(datasets[1], simplex_size, initial_cutoff)
     probs = nclosed ./ nsamples
     P = zeros(length(datasets), length(keys))
     insufficient_sample_inds = []
     for (ind, dataset) in enumerate(datasets)
-        keys, nsamples, nclosed = read_closure_stats(dataset, simplex_size)
+        keys, nsamples, nclosed = read_closure_stats(dataset, simplex_size, initial_cutoff)
         P[ind, :] = nclosed ./ nsamples
         for (key_ind, (key, nsamp)) in enumerate(zip(keys, nsamples))
             if nsamp <= 20
@@ -217,7 +191,7 @@ function closure_probs_heat_map(simplex_size::Int64)
     PyPlot.pygui(true)
 
     minval = max(1e-9, minimum([v for v in P[:] if v > 0]))
-    P[P[:] .== 0] = minval
+    P[P[:] .== 0] .= minval
     for (i, j) in insufficient_sample_inds; P[i, j] = 0; end
 
     cm = ColorMap("Blues")
@@ -234,16 +208,14 @@ function closure_probs_heat_map(simplex_size::Int64)
                                        facecolor=gray))
     end
     ax[:set_yticks](0:(length(datasets)-1))
-    #ax[:set_yticklabels](datasets, rotation=10, fontsize=(simplex_size == 4 ? 4 : 5))
     ax[:set_yticklabels](datasets, rotation=10, fontsize=(simplex_size == 4 ? 4 : 7))
     ax[:set_xticks](0:(length(probs)-1))
     ax[:tick_params](axis="both", length=3)
     ax[:set_xticklabels](["" for _ in 0:(length(probs)-1)])
-    #cb = colorbar(orientation="horizontal")
     cb = colorbar()
-    cb[:ax][:tick_params](labelsize=(simplex_size == 4 ? 18 : 9))
+    cb[:ax][:tick_params](labelsize=9)
     tight_layout()
-    savefig("closure-probs-$(simplex_size).pdf")
+    savefig("closure-probs-$(simplex_size)-$(initial_cutoff).pdf")
     show()
 end
 
@@ -347,7 +319,7 @@ function four_node_scatter_plot()
     minval, maxval = min_max_val(probs0111, probs22)
     loglog([minval, maxval], [minval, maxval], "black", lw=0.5)
     for i in 1:length(datasets)
-        loglog(probs0111[i], probs22[i], markers[i], color=colors[i])
+        loglog(probs22[i], probs0111[i], markers[i], color=colors[i])
     end
     xlabel("Closure probability (0111)", fontsize=fsz)
     ylabel("Closure probability (22)", fontsize=fsz)    
@@ -368,7 +340,7 @@ function generalized_means_plot()
             dataset = param[1]
             if dataset in datasets
                 basename = "output/generalized-means/$dataset-open-tris-80-100"
-                data = matread("$basename-genmeans-perf.mat")
+                data = load("$basename-genmeans-perf.jld2")
                 ps = data["ps"]
                 improvements = data["improvements"]
                 plot(ps[2:end-1], improvements[2:end-1],
@@ -381,13 +353,13 @@ function generalized_means_plot()
         ax[:set_xticks](-4:1:4)
         ax[:tick_params](axis="both", length=3)
     end
-        
+
     set1 = ["threads-stack-overflow", "threads-math-sx", "threads-ask-ubuntu"]
-    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu", "music-rap-genius",
+    set2 = ["tags-stack-overflow", "tags-math-sx", "tags-ask-ubuntu",
             "contact-high-school", "contact-primary-school",
             "DAWN", "NDC-substances", "NDC-classes"]
     set3 = ["coauth-MAG-History", "coauth-MAG-Geology", "coauth-DBLP",
-            "email-Enron", "email-Eu", "congress-committees", "congress-bills"]
+            "email-Enron", "email-Eu", "congress-bills"]
     subplot(221)
     make_subplot(set1)
     legend(fontsize=fsz)
@@ -395,9 +367,72 @@ function generalized_means_plot()
     make_subplot(set2)    
     subplot(223)
     make_subplot(set3)    
-    
     tight_layout()
     savefig("generalized-means-perf.pdf")
     show()
 end
 
+function logreg_decision_boundary(trial::Int64=1)
+    (X, _, y, _, yf, _) = egonet_train_test_data(trial)
+    X = X[:, [LOG_AVE_DEG, FRAC_OPEN]]
+    model = LogisticRegression(fit_intercept=true, multi_class="multinomial", C=10,
+                               solver="newton-cg", max_iter=1000)
+    ScikitLearn.fit!(model, X, y)
+
+    dim = 500
+    minval1, maxval1 = minimum(X[:, 1]) - 0.5, maximum(X[:, 1]) * 1.02
+    minval2, maxval2 = minimum(X[:, 2]) - 0.01, maximum(X[:, 2]) + 0.05
+    grid_feats = zeros(Float64, 2, dim * dim)
+    grid_ind = 1
+    xx = [(i - 1) * (maxval1 - minval1) / dim + minval1 for i in 1:dim]
+    yy = [(j - 1) * (maxval2 - minval2) / dim + minval2 for j in 1:dim]
+    for x in xx, y in yy
+        grid_feats[1, grid_ind] = x
+        grid_feats[2, grid_ind] = y
+        grid_ind += 1
+    end
+
+    close()
+    figure()
+    Z = reshape(ScikitLearn.predict(model, Matrix(grid_feats')), dim, dim)
+    labels = Dict(0 => "coauthorship", 1 => "tags", 2 => "threads",
+                  3 => "contact",      4 => "email")
+    greys = ["#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363"]
+    contourf(exp.(xx), yy, Z, colors=greys)
+    params = all_datasets_params()
+    label2domain = Dict(0  => 0,  1  => 0,  2  => 0,
+                        3  => -1,
+                        4  => 1,  5  => 1,  6  => 1,
+                        7  => 2,  8  => 2,  9  => 2,
+                        10 => -1, 11 => -1, 12 => -1, 13 => -1, 14 => -1,
+                        15 => 3,  16 => 3,
+                        17 => 4,  18 => 4)
+    colors_full = ["#ed5e5f", "#e41a1c", "#9f1214", 
+                   "no-op",
+                   "#69a3d2", "#377eb8", "#25567d", 
+                   "#80c87d", "#4daf4a", "#357933", 
+                   "no-op", "no-op", "no-op", "no-op", "no-op",
+                   "#984ea3", "#68356f",
+                   "#d37a48", "#a65628"]
+    for label in sort(unique(yf))
+        inds = findall(yf .== label)
+        scatter(exp.(X[inds, 1]), X[inds, 2],
+                color=colors_full[label],
+                marker="o",
+                label=params[label][1],
+                s=14)
+    end
+    fsz = 18
+    legend(fontsize=fsz-4)
+    ax = gca()
+    ax[:set_xscale]("log")
+    xlabel("Average degree", fontsize=fsz)
+    ylabel("Fraction of triangles open", fontsize=fsz)
+    title("Decision boundary", fontsize=fsz)
+    ax[:set_xlim](1.8, 400)
+    ax[:tick_params](axis="both", length=3, labelsize=14)
+    tight_layout()
+    savefig("decision.pdf")
+    show()
+end
+;

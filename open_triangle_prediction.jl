@@ -2,9 +2,9 @@ include("common.jl")
 
 using ScHoLP
 
-using Combinatorics
-using MAT
-using PyCall, JLD, PyCallJLD
+using LinearAlgebra
+using Printf
+using PyCall
 
 using ScikitLearn
 @sk_import linear_model: LogisticRegression
@@ -14,12 +14,12 @@ const OUTDIR = "prediction-output"
 basename_str(dataset::String) = "$(OUTDIR)/$dataset-open-tris-80-100"
 
 function read_data(dataset::HONData, prcntl1::Int64, prcntl2::Int64)
-    fname = "$(OUTDIR)/$(dataset.name)-open-tris-$prcntl1-$prcntl2.mat"
-    data = matread(fname)["data"]
+    fname = "$(OUTDIR)/$(dataset.name)-open-tris-$prcntl1-$prcntl2.jld2"
+    data = load(fname)["data"]
     dataT = data'
     ntri = size(dataT, 2)
-    triangles = Vector{NTuple{3,Int64}}(ntri)
-    labels = Vector{Int64}(ntri)
+    triangles = Vector{NTuple{3,Int64}}(undef, ntri)
+    labels = Vector{Int64}(undef, ntri)
     for i in 1:ntri
         triangles[i] = (dataT[1, i], dataT[2, i], dataT[3, i])
         labels[i] = dataT[4, i]
@@ -29,13 +29,12 @@ end
 
 function write_scores(dataset::HONData, score_type::String, scores::Vector{Float64})
     basename = basename_str(dataset.name)
-    matwrite("$basename-scores-$score_type.mat",
-             Dict("scores" => scores))
+    save("$basename-scores-$score_type.jld2", Dict("scores" => scores))
 end
 
 function read_scores(dataset::HONData, score_type::String)
     basename = basename_str(dataset.name)    
-    data = matread("$basename-scores-$score_type.mat")
+    data = load("$basename-scores-$score_type.jld2")
     return convert(Vector{Float64}, data["scores"])
 end
 
@@ -54,11 +53,11 @@ function collect_local_scores(dataset::HONData)
     println("geometric mean...")
     write_scores(dataset, "geom_mean", geometric_mean(triangles, B))
 
-    degrees = vec(sum(spones(B), 1))
+    degrees = vec(sum(make_sparse_ones(B), dims=1))
     println("projected graph preferential attachment...")
     write_scores(dataset, "proj_graph_PA", pref_attach3(triangles, degrees))
     
-    simp_degrees = vec(sum(At, 1))
+    simp_degrees = vec(sum(At, dims=1))
     println("simplex preferential attachment...")    
     write_scores(dataset, "simplex_PA", pref_attach3(triangles, simp_degrees))
     
@@ -85,29 +84,29 @@ function collect_walk_scores(dataset::HONData)
     println("Unweighted personalized Katz...")
     scores, S = PKatz3(triangles, B, true, dense_solve)
     write_scores(dataset, "UPKatz", scores)
-    matwrite("$basename-UPKatz.mat", Dict("S" => S))
+    save("$basename-UPKatz.jld2", Dict("S" => S))
 
     println("Weighted personalized Katz...")    
     scores, S = PKatz3(triangles, B, false, dense_solve)    
     write_scores(dataset, "WPKatz", scores)
-    matwrite("$basename-WPKatz.mat", Dict("S" => S))
+    save("$basename-WPKatz.jld2", Dict("S" => S))
 
     println("Unweighted personalized PageRank...")
     scores, S = PPR3(triangles, B, true, dense_solve)
     write_scores(dataset, "UPPR", scores)
-    matwrite("$basename-UPPR.mat", Dict("S" => S))
+    save("$basename-UPPR.jld2", Dict("S" => S))
 
     println("Weighted personalized PageRank...")    
     scores, S = PPR3(triangles, B, false, dense_solve)    
     write_scores(dataset, "WPPR", scores)
-    matwrite("$basename-WPPR.mat", Dict("S" => S))
+    save("$basename-WPPR.jld2", Dict("S" => S))
 end
 
 function collect_logreg_supervised_scores(dataset::HONData)
     function feature_matrix(triangles::Vector{NTuple{3,Int64}},
                             At::SpIntMat, B::SpIntMat)
-        degrees = vec(sum(spones(B), 1))
-        simp_degrees = vec(sum(At, 1))
+        degrees = vec(sum(make_sparse_ones(B), dims=1))
+        simp_degrees = vec(sum(At, dims=1))
         common_nbrs = common_neighbors_map(B, triangles)
         ntriangles = length(triangles)
         X = zeros(Float64, 26, ntriangles)
@@ -124,9 +123,9 @@ function collect_logreg_supervised_scores(dataset::HONData)
             X[12, ind] = length(common_jk)
             X[13, ind] = length(intersect(common_ij, common_ik, common_jk))
             X[14:22, ind] = log.(X[1:9, ind])
-            X[23:26, ind] = log.(X[10:13, ind] + 1.0)
+            X[23:26, ind] = log.(X[10:13, ind] .+ 1.0)
         end
-        return X'
+        return Matrix(X')
     end
     
     triangles = read_data(dataset, 80, 100)[1]
@@ -141,9 +140,8 @@ function collect_logreg_supervised_scores(dataset::HONData)
     train_simplices, train_nverts = split_data(simplices, nverts, times, 60, 80)[1:2]
     At_train, B_train = basic_matrices(train_simplices, train_nverts)[2:3]
     X_train = feature_matrix(train_triangles, At_train, B_train)
-    model = LogisticRegression(fit_intercept=true)
+    model = LogisticRegression(fit_intercept=true, solver="liblinear")
     ScikitLearn.fit!(model, X_train, val_labels)
-    JLD.save("$basename-LR-model.jld", "model", model)
     X = feature_matrix(triangles, At, B)
     learned_scores = ScikitLearn.predict_proba(model, X)[:, 2]
     write_scores(dataset, "logreg_supervised", learned_scores)
@@ -156,10 +154,10 @@ function collect_Simplicial_PPR_combined_scores(dataset::HONData)
     A = basic_matrices(old_simplices, old_nverts)[1]
     basename = basename_str(dataset.name)    
 
-    (scores_comb, S_comb, edge_map) = Simplicial_PPR3_combined(triangles, A, 0.85)
+    (scores_comb, S_comb, edge_map) = Simplicial_PPR3_combined(triangles, A, true, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
-    matwrite("$basename-SimpPPR_comb.mat",
-             Dict("S" => S_comb, "edge_map" => edge_map))
+    save("$basename-SimpPPR_comb.jld2",
+         Dict("S" => S_comb, "edge_map" => edge_map))
 end
 
 function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
@@ -171,19 +169,19 @@ function collect_Simplicial_PPR_decomposed_scores(dataset::HONData)
     
     (scores_comb, scores_curl, scores_grad, scores_harm,
      S_comb,      S_curl,      S_grad,      S_harm, edge_map) =
-         Simplicial_PPR3_decomposed(triangles, A, false, 0.85)
+         Simplicial_PPR3_decomposed(triangles, A, true, 0.85)
     write_scores(dataset, "SimpPPR_comb", scores_comb)
     write_scores(dataset, "SimpPPR_grad", scores_grad)
     write_scores(dataset, "SimpPPR_curl", scores_curl)
-    write_scores(dataset, "SimpPPR_harm", scores_harm)            
-    matwrite("$basename-SimpPPR_comb.mat",
-             Dict("S" => S_comb, "edge_map" => edge_map))
-    matwrite("$basename-SimpPPR_grad.mat",
-             Dict("S" => S_grad, "edge_map" => edge_map))
-    matwrite("$basename-SimpPPR_curl.mat",
-             Dict("S" => S_curl, "edge_map" => edge_map))
-    matwrite("$basename-SimpPPR_harm.mat",
-             Dict("S" => S_harm, "edge_map" => edge_map))
+    write_scores(dataset, "SimpPPR_harm", scores_harm)           
+    save("$basename-SimpPPR_comb.jld2",
+         Dict("S" => S_comb, "edge_map" => edge_map))
+    save("$basename-SimpPPR_grad.jld2",
+         Dict("S" => S_grad, "edge_map" => edge_map))
+    save("$basename-SimpPPR_curl.jld2",
+         Dict("S" => S_curl, "edge_map" => edge_map))
+    save("$basename-SimpPPR_harm.jld2",
+         Dict("S" => S_harm, "edge_map" => edge_map))
 end
 
 function collect_generalized_means(dataset::HONData)
@@ -205,21 +203,20 @@ function collect_generalized_means(dataset::HONData)
         push!(improvements, improvement)
         println("($p): $improvement")
     end
-    matwrite("$basename-genmeans-perf.mat",
-             Dict("improvements" => improvements, "ps" => ps))
+    save("$basename-genmeans-perf.jld2",
+         Dict("improvements" => improvements, "ps" => ps))
     return (ps, improvements)
 end
 
 function evaluate(dataset::HONData, score_types::Vector{String})
     triangles, labels = read_data(dataset, 80, 100)
     rand_rate = sum(labels .== 1) / length(labels)
-    println(@sprintf("random: %0.2e", rand_rate))
+    @printf("random: %0.2e\n", rand_rate)
     for score_type in score_types
         scores = read_scores(dataset, score_type)
-        assert(length(labels) == length(scores))
         ave_prec = average_precision_score(labels, scores)
         improvement = ave_prec / rand_rate
-        println(@sprintf("%s: %0.2f", score_type, improvement))
+        @printf("%s: %0.2f\n", score_type, improvement)
     end
 end
 
@@ -238,14 +235,14 @@ Input parameters:
 """
 function top_predictions(dataset::HONData, score_type::String, topk::Int64=10)
     triangles, labels = read_data(dataset, 80, 100)
-    scores = read_scores(dataset, score_type)    
+    scores = read_scores(dataset, score_type)
     sp = sortperm(scores, alg=QuickSort, rev=true)
     node_labels = read_node_labels(dataset.name)
     for rank = 1:topk
         ind = sp[rank]
         i, j, k = triangles[ind]
-        println(@sprintf("%d (%f; %d): %s; %s; %s", rank, scores[ind],
-                         labels[ind], node_labels[i], node_labels[j], node_labels[k]))
+        @printf("%d (%f; %d): %s; %s; %s\n", rank, scores[ind],
+                labels[ind], node_labels[i], node_labels[j], node_labels[k])
     end
 end
 
@@ -273,8 +270,8 @@ function collect_labeled_dataset(dataset::HONData)
             output_data[4, i] = (tri in new_closed_tris)
         end
         basename = basename_str(dataset.name)
-        matwrite("$(OUTDIR)/$(dataset.name)-$(output_name).mat",
-                 Dict("data" => output_data'))
+        save("$(OUTDIR)/$(dataset.name)-$(output_name).jld2",
+             Dict("data" => output_data'))
     end
     
     old_simplices, old_nverts, new_simplices, new_nverts =
