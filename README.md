@@ -258,7 +258,7 @@ We saw how to get these numbers in the summary statistics section above. The `ba
 
 ##### Table 2 (logistic regression for system domain classification)
 
-Egonet data was collected with the function call `collect_egonet_data(100, 20)` in the file `egonet_analysis.jl`. This takes some time, so we pre-computed the data output and stored it in the directory `output/egonets`. We can reproduce the performance of the logistic regression models with the following code snippet.
+Egonet data was collected with the function call `collect_egonet_data(100, 20)` in the file `egonet_analysis.jl`. This takes some time, so we pre-computed the data output and stored it in the directory `output/egonets`. We can reproduce the performance of the logistic regression models with the following code snippet. Performance numbers might be slightly different due to randomization.
 
 ```julia
 include("egonet_analysis.jl")

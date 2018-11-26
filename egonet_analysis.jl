@@ -131,10 +131,8 @@ function egonet_predict(feat_cols::Vector{Int64})
 
     for trial in 1:20
         (X_train, X_test, y_train, y_test) = egonet_train_test_data(trial)[1:4]
-        @show typeof(X_train)
-        @show typeof(X_test)
-        @show typeof(y_train)
-        @show typeof(y_test)        
+        X_train = X_train[:, feat_cols]
+        X_test = X_test[:, feat_cols]
         model = LogisticRegression(fit_intercept=true, multi_class="multinomial",
                                    C=10, solver="newton-cg", max_iter=10000)
         ScikitLearn.fit!(model, X_train, y_train)

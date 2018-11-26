@@ -423,7 +423,7 @@ function logreg_decision_boundary(trial::Int64=1)
                 s=14)
     end
     fsz = 18
-    legend(fontsize=fsz-4)
+    #legend(fontsize=fsz-4)
     ax = gca()
     ax[:set_xscale]("log")
     xlabel("Average degree", fontsize=fsz)
