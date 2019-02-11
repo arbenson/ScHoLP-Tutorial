@@ -57,6 +57,20 @@ ex.simplices, ex.nverts, ex.times, ex.name  # components of the data structure
 chs = example_dataset("contact-high-school")  # another dataset
 ```
 
+The structure is a name (a string) and three vectors of integers. The simplices vector contains the elements of the simplicies and the nverts vector says how many vertices are in each simplex. The times vector gives the corresponding times. Here's an example loop through the data structure
+
+```julia
+using ScHoLP
+ex = example_dataset("example1")  # example from figure 1 of paper
+let curr_ind = 0
+	for (nvert, time) in zip(ex.nverts, ex.times)
+    	simplex = ex.simplices[(curr_ind + 1):(curr_ind + nvert)]
+	    curr_ind += nvert
+	    println("time = $time; simplex = $simplex")
+	end
+end
+```
+
 The tutorial also comes with a few datasets, which will make it feasible to reproduce most of the results from the paper.
 
 ```julia
